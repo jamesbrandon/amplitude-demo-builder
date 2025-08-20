@@ -1,0 +1,147 @@
+{
+  "company": {
+    "name": "SmartHome Hub",
+    "industry": "iot",
+    "website": "https://smarthomehub.com",
+    "description": "Intelligent home automation and IoT device management platform"
+  },
+  "branding": {
+    "primaryColor": "#10b981",
+    "secondaryColor": "#64748b"
+  },
+  "scenarios": {
+    "device_interaction": {
+      "name": "Device Interactions",
+      "description": "Smart device usage and automation",
+      "weight": 0.5,
+      "events": [
+        "Device Activated",
+        "Automation Triggered",
+        "Scene Executed",
+        "Voice Command Used",
+        "Schedule Created"
+      ]
+    },
+    "monitoring": {
+      "name": "Home Monitoring",
+      "description": "Security and environmental monitoring",
+      "weight": 0.3,
+      "events": [
+        "Motion Detected",
+        "Door Opened",
+        "Temperature Alert",
+        "Security Armed",
+        "Camera Accessed"
+      ]
+    },
+    "energy": {
+      "name": "Energy Management",
+      "description": "Power consumption and efficiency",
+      "weight": 0.2,
+      "events": [
+        "Energy Report Generated",
+        "Peak Usage Alert",
+        "Device Power Optimized",
+        "Solar Panel Data",
+        "Cost Savings Calculated"
+      ]
+    }
+  },
+  "userJourney": {
+    "stages": [
+      {
+        "name": "new_homeowner",
+        "displayName": "New Smart Home Owner",
+        "duration": "0-7 days",
+        "conversionRate": 0.30,
+        "events": ["Device Setup", "App Downloaded", "First Automation"]
+      },
+      {
+        "name": "active_user",
+        "displayName": "Active User",
+        "duration": "7-30 days",
+        "conversionRate": 0.60,
+        "events": ["Daily Interactions", "Scene Creation", "Voice Commands"]
+      },
+      {
+        "name": "smart_home_enthusiast",
+        "displayName": "Smart Home Enthusiast",
+        "duration": "30+ days",
+        "conversionRate": 0.80,
+        "events": ["Advanced Automation", "Integration Setup", "Energy Optimization"]
+      },
+      {
+        "name": "power_user",
+        "displayName": "Power User",
+        "duration": "90+ days",
+        "conversionRate": 0.95,
+        "events": ["Custom Integrations", "API Usage", "Community Contributions"]
+      }
+    ]
+  },
+  "products": [
+    {
+      "id": "smart_thermostat",
+      "name": "Smart Thermostat Pro",
+      "category": "climate_control",
+      "price": 249.99,
+      "currency": "USD"
+    },
+    {
+      "id": "security_camera",
+      "name": "4K Security Camera",
+      "category": "security",
+      "price": 199.99,
+      "currency": "USD"
+    },
+    {
+      "id": "smart_lock",
+      "name": "Keyless Smart Lock",
+      "category": "security",
+      "price": 179.99,
+      "currency": "USD"
+    },
+    {
+      "id": "hub_subscription",
+      "name": "Premium Hub Subscription",
+      "category": "subscription",
+      "price": 9.99,
+      "currency": "USD",
+      "billingCycles": ["monthly", "yearly"]
+    }
+  ],
+  "attribution": {
+    "sources": [
+      {
+        "utm_source": "amazon",
+        "utm_medium": "marketplace",
+        "utm_campaign": "smart_home_products",
+        "weight": 0.30
+      },
+      {
+        "utm_source": "youtube",
+        "utm_medium": "video",
+        "utm_campaign": "home_automation_tutorials",
+        "weight": 0.25
+      },
+      {
+        "utm_source": "google",
+        "utm_medium": "cpc",
+        "utm_campaign": "smart_home_keywords",
+        "weight": 0.20
+      },
+      {
+        "utm_source": "reddit",
+        "utm_medium": "social",
+        "utm_campaign": "home_automation_community",
+        "weight": 0.15
+      },
+      {
+        "utm_source": "organic",
+        "utm_medium": "organic",
+        "utm_campaign": null,
+        "weight": 0.10
+      }
+    ]
+  }
+}

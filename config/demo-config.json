@@ -1,0 +1,169 @@
+{
+  "company": {
+    "name": "Demo Company",
+    "industry": "saas",
+    "website": "https://democompany.com",
+    "description": "A sample company for Amplitude analytics demonstration"
+  },
+  "branding": {
+    "primaryColor": "#2563eb",
+    "secondaryColor": "#64748b",
+    "logo": "/assets/logo.png",
+    "favicon": "/assets/favicon.ico"
+  },
+  "analytics": {
+    "trackingPlan": "demo_tracking_plan_v1",
+    "defaultProperties": {
+      "source": "demo_app",
+      "environment": "demo"
+    }
+  },
+  "scenarios": {
+    "business": {
+      "name": "Core Business Events",
+      "description": "Primary user actions and business metrics",
+      "weight": 0.4,
+      "events": [
+        "User Signup",
+        "Feature Used",
+        "Subscription Purchased",
+        "Support Ticket Created",
+        "Account Upgraded"
+      ]
+    },
+    "marketing": {
+      "name": "Marketing Attribution",
+      "description": "Campaign tracking and user acquisition",
+      "weight": 0.2,
+      "events": [
+        "Page Viewed",
+        "Campaign Clicked",
+        "Lead Generated",
+        "Email Opened",
+        "Ad Clicked"
+      ]
+    },
+    "product": {
+      "name": "Product Engagement",
+      "description": "Feature usage and user engagement",
+      "weight": 0.3,
+      "events": [
+        "Feature Discovered",
+        "Tutorial Completed",
+        "Integration Connected",
+        "Report Generated",
+        "Settings Changed"
+      ]
+    },
+    "revenue": {
+      "name": "Revenue Events",
+      "description": "Purchase and subscription events",
+      "weight": 0.1,
+      "events": [
+        "Subscription Purchased",
+        "Plan Upgraded",
+        "Add-on Purchased",
+        "Payment Failed",
+        "Subscription Cancelled"
+      ]
+    }
+  },
+  "userJourney": {
+    "stages": [
+      {
+        "name": "visitor",
+        "displayName": "Anonymous Visitor",
+        "duration": "0-1 days",
+        "conversionRate": 0.15,
+        "events": ["Page Viewed", "Content Consumed", "CTA Clicked"]
+      },
+      {
+        "name": "trial_user",
+        "displayName": "Trial User",
+        "duration": "1-14 days",
+        "conversionRate": 0.25,
+        "events": ["User Signup", "Feature Used", "Tutorial Completed"]
+      },
+      {
+        "name": "active_user",
+        "displayName": "Active User",
+        "duration": "14+ days",
+        "conversionRate": 0.80,
+        "events": ["Feature Used", "Integration Connected", "Report Generated"]
+      },
+      {
+        "name": "power_user",
+        "displayName": "Power User",
+        "duration": "30+ days",
+        "conversionRate": 0.95,
+        "events": ["Advanced Feature Used", "API Called", "Custom Integration"]
+      }
+    ]
+  },
+  "products": [
+    {
+      "id": "basic_plan",
+      "name": "Basic Plan",
+      "category": "subscription",
+      "price": 29.99,
+      "currency": "USD",
+      "billingCycles": ["monthly", "yearly"]
+    },
+    {
+      "id": "pro_plan",
+      "name": "Professional Plan",
+      "category": "subscription",
+      "price": 99.99,
+      "currency": "USD",
+      "billingCycles": ["monthly", "yearly"]
+    },
+    {
+      "id": "enterprise_plan",
+      "name": "Enterprise Plan",
+      "category": "subscription",
+      "price": 299.99,
+      "currency": "USD",
+      "billingCycles": ["monthly", "yearly"]
+    }
+  ],
+  "attribution": {
+    "sources": [
+      {
+        "utm_source": "google",
+        "utm_medium": "cpc",
+        "utm_campaign": "brand_search",
+        "weight": 0.3
+      },
+      {
+        "utm_source": "facebook",
+        "utm_medium": "social",
+        "utm_campaign": "lookalike_audience",
+        "weight": 0.2
+      },
+      {
+        "utm_source": "linkedin",
+        "utm_medium": "social",
+        "utm_campaign": "b2b_targeting",
+        "weight": 0.15
+      },
+      {
+        "utm_source": "email",
+        "utm_medium": "email",
+        "utm_campaign": "newsletter",
+        "weight": 0.1
+      },
+      {
+        "utm_source": "organic",
+        "utm_medium": "organic",
+        "utm_campaign": null,
+        "weight": 0.25
+      }
+    ]
+  },
+  "simulation": {
+    "eventInterval": 3000,
+    "userSessionDuration": 1800000,
+    "maxConcurrentUsers": 50,
+    "eventVariation": 0.3
+  }
+}

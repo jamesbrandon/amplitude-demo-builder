@@ -1,0 +1,216 @@
+{
+  "company": {
+    "name": "Grand Vista Resort",
+    "industry": "hospitality",
+    "website": "https://grandvistaresort.com",
+    "description": "Luxury resort and hotel with comprehensive guest experience analytics"
+  },
+  "branding": {
+    "primaryColor": "#d97706",
+    "secondaryColor": "#64748b"
+  },
+  "scenarios": {
+    "booking_journey": {
+      "name": "Booking & Reservations",
+      "description": "Guest booking process and reservation management",
+      "weight": 0.4,
+      "events": [
+        "Room Search Performed",
+        "Room Viewed",
+        "Booking Started",
+        "Booking Completed",
+        "Booking Modified",
+        "Booking Cancelled"
+      ]
+    },
+    "guest_experience": {
+      "name": "Guest Experience",
+      "description": "On-property guest activities and services",
+      "weight": 0.35,
+      "events": [
+        "Check-in Completed",
+        "Amenity Used",
+        "Room Service Ordered",
+        "Spa Service Booked",
+        "Restaurant Reservation Made",
+        "Concierge Service Requested",
+        "Check-out Completed"
+      ]
+    },
+    "digital_engagement": {
+      "name": "Digital Engagement",
+      "description": "Mobile app and digital touchpoint usage",
+      "weight": 0.15,
+      "events": [
+        "Mobile App Opened",
+        "Digital Key Used",
+        "WiFi Connected",
+        "In-room Entertainment Accessed",
+        "Guest Survey Completed",
+        "Social Media Shared"
+      ]
+    },
+    "loyalty_revenue": {
+      "name": "Loyalty & Revenue",
+      "description": "Loyalty program and additional revenue streams",
+      "weight": 0.1,
+      "events": [
+        "Loyalty Program Joined",
+        "Points Earned",
+        "Points Redeemed",
+        "Upgrade Purchased",
+        "Package Add-on Purchased",
+        "Future Booking Made"
+      ]
+    }
+  },
+  "userJourney": {
+    "stages": [
+      {
+        "name": "prospect",
+        "displayName": "Prospective Guest",
+        "duration": "0-1 visits",
+        "conversionRate": 0.12,
+        "events": ["Room Search Performed", "Room Viewed", "Price Compared"]
+      },
+      {
+        "name": "booker",
+        "displayName": "First-time Booker",
+        "duration": "1 booking",
+        "conversionRate": 0.30,
+        "events": ["Booking Completed", "Pre-arrival Email Opened", "Check-in Completed"]
+      },
+      {
+        "name": "guest",
+        "displayName": "Active Guest",
+        "duration": "During stay",
+        "conversionRate": 0.70,
+        "events": ["Amenity Used", "Room Service Ordered", "Guest Survey Completed"]
+      },
+      {
+        "name": "repeat_guest",
+        "displayName": "Repeat Guest",
+        "duration": "2+ bookings",
+        "conversionRate": 0.85,
+        "events": ["Loyalty Program Joined", "Direct Booking Made", "Upgrade Purchased"]
+      },
+      {
+        "name": "vip_guest",
+        "displayName": "VIP Guest",
+        "duration": "5+ stays",
+        "conversionRate": 0.95,
+        "events": ["Elite Status Achieved", "Referral Made", "Corporate Account Created"]
+      }
+    ]
+  },
+  "products": [
+    {
+      "id": "standard_room",
+      "name": "Standard King Room",
+      "category": "accommodation",
+      "price": 189.99,
+      "currency": "USD"
+    },
+    {
+      "id": "deluxe_room",
+      "name": "Deluxe Ocean View",
+      "category": "accommodation",
+      "price": 289.99,
+      "currency": "USD"
+    },
+    {
+      "id": "suite_junior",
+      "name": "Junior Suite",
+      "category": "accommodation",
+      "price": 449.99,
+      "currency": "USD"
+    },
+    {
+      "id": "suite_presidential",
+      "name": "Presidential Suite",
+      "category": "accommodation",
+      "price": 899.99,
+      "currency": "USD"
+    },
+    {
+      "id": "spa_package",
+      "name": "Relaxation Spa Package",
+      "category": "amenity",
+      "price": 199.99,
+      "currency": "USD"
+    },
+    {
+      "id": "dining_package",
+      "name": "All-Inclusive Dining",
+      "category": "dining",
+      "price": 89.99,
+      "currency": "USD"
+    },
+    {
+      "id": "activity_package",
+      "name": "Adventure Activities Package",
+      "category": "activities",
+      "price": 149.99,
+      "currency": "USD"
+    },
+    {
+      "id": "airport_transfer",
+      "name": "Premium Airport Transfer",
+      "category": "transportation",
+      "price": 75.00,
+      "currency": "USD"
+    }
+  ],
+  "attribution": {
+    "sources": [
+      {
+        "utm_source": "google",
+        "utm_medium": "cpc",
+        "utm_campaign": "luxury_hotel_search",
+        "weight": 0.25
+      },
+      {
+        "utm_source": "booking_com",
+        "utm_medium": "referral",
+        "utm_campaign": "ota_partnership",
+        "weight": 0.20
+      },
+      {
+        "utm_source": "expedia",
+        "utm_medium": "referral",
+        "utm_campaign": "ota_partnership",
+        "weight": 0.15
+      },
+      {
+        "utm_source": "instagram",
+        "utm_medium": "social",
+        "utm_campaign": "luxury_lifestyle",
+        "weight": 0.15
+      },
+      {
+        "utm_source": "email",
+        "utm_medium": "email",
+        "utm_campaign": "loyalty_newsletter",
+        "weight": 0.10
+      },
+      {
+        "utm_source": "tripadvisor",
+        "utm_medium": "referral",
+        "utm_campaign": "review_site",
+        "weight": 0.10
+      },
+      {
+        "utm_source": "organic",
+        "utm_medium": "organic",
+        "utm_campaign": null,
+        "weight": 0.05
+      }
+    ]
+  },
+  "simulation": {
+    "eventInterval": 4000,
+    "userSessionDuration": 2400000,
+    "maxConcurrentUsers": 30,
+    "eventVariation": 0.4
+  }
+}

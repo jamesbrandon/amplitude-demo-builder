@@ -1,0 +1,154 @@
+{
+  "company": {
+    "name": "DataFlow Pro",
+    "industry": "saas",
+    "website": "https://dataflowpro.com",
+    "description": "Advanced data analytics and visualization platform for businesses"
+  },
+  "branding": {
+    "primaryColor": "#3b82f6",
+    "secondaryColor": "#64748b"
+  },
+  "scenarios": {
+    "onboarding": {
+      "name": "User Onboarding",
+      "description": "New user activation and setup",
+      "weight": 0.3,
+      "events": [
+        "Account Created",
+        "Data Source Connected",
+        "First Dashboard Created",
+        "Tutorial Completed",
+        "Team Member Invited"
+      ]
+    },
+    "feature_usage": {
+      "name": "Feature Usage",
+      "description": "Core platform functionality",
+      "weight": 0.4,
+      "events": [
+        "Report Generated",
+        "Dashboard Viewed",
+        "Data Query Executed",
+        "Chart Created",
+        "Export Completed"
+      ]
+    },
+    "collaboration": {
+      "name": "Team Collaboration",
+      "description": "Sharing and teamwork features",
+      "weight": 0.2,
+      "events": [
+        "Dashboard Shared",
+        "Comment Added",
+        "Notification Sent",
+        "Permission Changed",
+        "Meeting Scheduled"
+      ]
+    },
+    "monetization": {
+      "name": "Subscription & Billing",
+      "description": "Revenue and upgrade events",
+      "weight": 0.1,
+      "events": [
+        "Trial Started",
+        "Plan Upgraded",
+        "Payment Processed",
+        "Usage Limit Reached",
+        "Subscription Renewed"
+      ]
+    }
+  },
+  "userJourney": {
+    "stages": [
+      {
+        "name": "trial_user",
+        "displayName": "Trial User",
+        "duration": "0-14 days",
+        "conversionRate": 0.20,
+        "events": ["Account Created", "Data Source Connected", "Tutorial Completed"]
+      },
+      {
+        "name": "basic_user",
+        "displayName": "Basic User",
+        "duration": "14+ days",
+        "conversionRate": 0.40,
+        "events": ["Report Generated", "Dashboard Created", "Data Exported"]
+      },
+      {
+        "name": "pro_user",
+        "displayName": "Pro User",
+        "duration": "30+ days",
+        "conversionRate": 0.70,
+        "events": ["Advanced Analytics Used", "API Integration", "Custom Dashboard"]
+      },
+      {
+        "name": "enterprise_user",
+        "displayName": "Enterprise User",
+        "duration": "90+ days",
+        "conversionRate": 0.90,
+        "events": ["SSO Configured", "Advanced Security", "Custom Integrations"]
+      }
+    ]
+  },
+  "products": [
+    {
+      "id": "starter_plan",
+      "name": "Starter Plan",
+      "category": "subscription",
+      "price": 49.99,
+      "currency": "USD",
+      "billingCycles": ["monthly", "yearly"]
+    },
+    {
+      "id": "professional_plan",
+      "name": "Professional Plan",
+      "category": "subscription",
+      "price": 149.99,
+      "currency": "USD",
+      "billingCycles": ["monthly", "yearly"]
+    },
+    {
+      "id": "enterprise_plan",
+      "name": "Enterprise Plan",
+      "category": "subscription",
+      "price": 499.99,
+      "currency": "USD",
+      "billingCycles": ["monthly", "yearly"]
+    }
+  ],
+  "attribution": {
+    "sources": [
+      {
+        "utm_source": "google",
+        "utm_medium": "cpc",
+        "utm_campaign": "data_analytics_keywords",
+        "weight": 0.35
+      },
+      {
+        "utm_source": "linkedin",
+        "utm_medium": "social",
+        "utm_campaign": "b2b_professionals",
+        "weight": 0.25
+      },
+      {
+        "utm_source": "content_marketing",
+        "utm_medium": "referral",
+        "utm_campaign": "blog_articles",
+        "weight": 0.20
+      },
+      {
+        "utm_source": "webinar",
+        "utm_medium": "email",
+        "utm_campaign": "educational_series",
+        "weight": 0.10
+      },
+      {
+        "utm_source": "organic",
+        "utm_medium": "organic",
+        "utm_campaign": null,
+        "weight": 0.10
+      }
+    ]
+  }
+}

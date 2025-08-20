@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amplitude Demo Template</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+        }
+        
+        .header {
+            background: var(--primary-color, #3b82f6);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .header .subtitle {
+            opacity: 0.9;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+        
+        .status {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .status-content {
+            flex: 1;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-dot.connected {
+            background: #10b981;
+        }
+        
+        .status-dot.disconnected {
+            background: #ef4444;
+        }
+        
+        .status-dot.demo {
+            background: #f59e0b;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color, #3b82f6);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-color-dark, #2563eb);
+        }
+        
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #475569;
+        }
+        
+        .event-stream {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 1rem;
+            background: #f8fafc;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.8rem;
+        }
+        
+        .event-item {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid #10b981;
+        }
+        
+        .event-item.failed {
+            border-left-color: #ef4444;
+        }
+        
+        .event-item.demo {
+            border-left-color: #f59e0b;
+        }
+        
+        .event-meta {
+            color: #64748b;
+            font-size: 0.75rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f1f5f9;
+            border-radius: 6px;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color, #3b82f6);
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        .scenario-selector {
+            margin-bottom: 1rem;
+        }
+        
+        .scenario-selector select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+        
+        .modal-content h2 {
+            margin-bottom: 0.5rem;
+            color: var(--primary-color, #3b82f6);
+        }
+        
+        .setup-step {
+            margin: 2rem 0;
+        }
+        
+        .setup-step h3 {
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+        
+        .industry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .industry-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f8fafc;
+        }
+        
+        .industry-card:hover {
+            border-color: var(--primary-color, #3b82f6);
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .industry-card.selected {
+            border-color: var(--primary-color, #3b82f6);
+            background: var(--primary-color, #3b82f6);
+            color: white;
+        }
+        
+        .industry-card h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+        }
+        
+        .industry-card .industry-company {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .industry-card .industry-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+        
+        .industry-card .industry-stats {
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .form-group {
+            margin: 1rem 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .form-group small {
+            display: block;
+            margin-top: 0.5rem;
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+        
+        .form-group small a {
+            color: var(--primary-color, #3b82f6);
+            text-decoration: none;
+        }
+        
+        .scenarios-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+        
+        .scenario-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 1rem;
+            background: #f8fafc;
+        }
+        
+        .scenario-card h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--primary-color, #3b82f6);
+        }
+        
+        .scenario-card .scenario-description {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+        }
+        
+        .scenario-card .scenario-events {
+            font-size: 0.8rem;
+        }
+        
+        .scenario-card .scenario-events strong {
+            color: #1e293b;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .demo-info {
+            background: #f1f5f9;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .info-item {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .modal-content {
+                margin: 2% auto;
+                width: 95%;
+                padding: 1.5rem;
+            }
+            
+            .industry-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .scenarios-preview {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 id="company-name">Amplitude Demo Template</h1>
+        <div class="subtitle" id="company-subtitle">Loading configuration...</div>
+    </div>
+    
+    <div class="container">
+        <!-- Setup Modal -->
+        <div class="modal" id="setup-modal">
+            <div class="modal-content">
+                <h2>🎯 Amplitude Demo Setup</h2>
+                <p>Configure your demo in just a few clicks!</p>
+                
+                <!-- Navigation buttons at the top for better visibility -->
+                <div class="modal-actions" style="margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0;">
+                    <button class="btn btn-secondary" id="setup-back" style="display: none;">← Back</button>
+                    <button class="btn btn-primary" id="setup-next">Next →</button>
+                    <button class="btn btn-primary" id="setup-start" style="display: none;">🚀 Start Demo</button>
+                </div>
+                
+                <div class="setup-step" id="step-industry">
+                    <h3>1. Choose Your Industry</h3>
+                    <div class="industry-grid" id="industry-grid">
+                        <!-- Industries will be loaded here -->
+                    </div>
+                </div>
+                
+                <div class="setup-step" id="step-config" style="display: none;">
+                    <h3>2. Configure Amplitude</h3>
+                    <div class="form-group">
+                        <label for="api-key-input">Amplitude API Key (optional):</label>
+                        <input type="password" id="api-key-input" placeholder="Enter your Amplitude API key or leave blank for demo mode">
+                        <small>Get your API key from <a href="https://amplitude.com" target="_blank">amplitude.com</a></small>
+                    </div>
+                </div>
+                
+                <div class="setup-step" id="step-scenarios" style="display: none;">
+                    <h3>3. Demo Scenarios Available</h3>
+                    <div id="scenarios-preview">
+                        <!-- Scenarios will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h2>Demo Controls</h2>
+                
+                <div class="status">
+                    <div class="status-dot" id="amplitude-status"></div>
+                    <div class="status-content">
+                        <span id="amplitude-text">Loading demo configuration...</span>
+                        <small id="amplitude-help" style="display: none; color: #64748b; font-size: 0.8rem; margin-top: 0.25rem;"></small>
+                    </div>
+                </div>
+                
+                <div class="demo-info" id="demo-info" style="display: none;">
+                    <div class="info-item">
+                        <strong>Company:</strong> <span id="current-company">-</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Industry:</strong> <span id="current-industry">-</span>
+                    </div>
+                </div>
+                
+                <div class="scenario-selector">
+                    <label for="scenario-select">Scenario:</label>
+                    <select id="scenario-select">
+                        <option value="business">Loading scenarios...</option>
+                    </select>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" id="start-demo">Start Demo</button>
+                    <button class="btn btn-secondary" id="stop-demo">Stop Demo</button>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-secondary" id="trigger-event">Trigger Event</button>
+                    <button class="btn btn-secondary" id="test-connection">🧪 Test Connection</button>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-secondary" id="setup-button">⚙️ Setup</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Statistics</h2>
+                <div class="stats-grid" id="stats-container">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-events">0</div>
+                        <div class="stat-label">Total Events</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="connected-clients">0</div>
+                        <div class="stat-label">Connected Clients</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="success-rate">0%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Live Event Stream</h2>
+            <div class="event-stream" id="event-stream">
+                <div class="event-item">
+                    <div>Waiting for events...</div>
+                    <div class="event-meta">Demo will show real-time analytics events here</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        class AmplitudeDemoInterface {
+            constructor() {
+                this.socket = io();
+                this.config = null;
+                this.isRunning = false;
+                this.availableIndustries = [];
+                this.selectedIndustry = null;
+                this.setupStep = 1;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.setupSocketListeners();
+                this.loadConfiguration();
+                this.checkIfSetupNeeded();
+            }
+            
+            initializeElements() {
+                this.elements = {
+                    companyName: document.getElementById('company-name'),
+                    companySubtitle: document.getElementById('company-subtitle'),
+                    amplitudeStatus: document.getElementById('amplitude-status'),
+                    amplitudeText: document.getElementById('amplitude-text'),
+                    amplitudeHelp: document.getElementById('amplitude-help'),
+                    scenarioSelect: document.getElementById('scenario-select'),
+                    startDemo: document.getElementById('start-demo'),
+                    stopDemo: document.getElementById('stop-demo'),
+                    triggerEvent: document.getElementById('trigger-event'),
+                    testConnection: document.getElementById('test-connection'),
+                    eventStream: document.getElementById('event-stream'),
+                    totalEvents: document.getElementById('total-events'),
+                    connectedClients: document.getElementById('connected-clients'),
+                    successRate: document.getElementById('success-rate'),
+                    
+                    // Setup modal elements
+                    setupModal: document.getElementById('setup-modal'),
+                    setupButton: document.getElementById('setup-button'),
+                    industryGrid: document.getElementById('industry-grid'),
+                    apiKeyInput: document.getElementById('api-key-input'),
+                    scenariosPreview: document.getElementById('scenarios-preview'),
+                    setupNext: document.getElementById('setup-next'),
+                    setupBack: document.getElementById('setup-back'),
+                    setupStart: document.getElementById('setup-start'),
+                    
+                    // Demo info
+                    demoInfo: document.getElementById('demo-info'),
+                    currentCompany: document.getElementById('current-company'),
+                    currentIndustry: document.getElementById('current-industry')
+                };
+            }
+            
+            setupEventListeners() {
+                this.elements.startDemo.addEventListener('click', () => this.startDemo());
+                this.elements.stopDemo.addEventListener('click', () => this.stopDemo());
+                this.elements.triggerEvent.addEventListener('click', () => this.triggerEvent());
+                this.elements.testConnection.addEventListener('click', () => this.testConnection());
+                
+                // Setup modal listeners
+                this.elements.setupButton.addEventListener('click', () => this.showSetupModal());
+                this.elements.setupNext.addEventListener('click', () => this.nextSetupStep());
+                this.elements.setupBack.addEventListener('click', () => this.prevSetupStep());
+                this.elements.setupStart.addEventListener('click', () => this.completeSetup());
+                
+                // Close modal when clicking outside
+                this.elements.setupModal.addEventListener('click', (e) => {
+                    if (e.target === this.elements.setupModal) {
+                        this.hideSetupModal();
+                    }
+                });
+            }
+            
+            setupSocketListeners() {
+                this.socket.on('demo-status', (data) => {
+                    this.updateStatus(data);
+                });
+                
+                this.socket.on('live-event', (data) => {
+                    this.addEventToStream(data);
+                });
+                
+                this.socket.on('event-triggered', (data) => {
+                    this.addEventToStream(data);
+                });
+                
+                this.socket.on('demo-started', (data) => {
+                    this.isRunning = true;
+                    this.updateControls();
+                });
+                
+                this.socket.on('demo-stopped', (data) => {
+                    this.isRunning = false;
+                    this.updateControls();
+                });
+            }
+            
+            async loadConfiguration() {
+                try {
+                    const response = await fetch('/api/config');
+                    this.config = await response.json();
+                    this.updateInterface();
+                    this.loadScenarios();
+                } catch (error) {
+                    console.error('Failed to load configuration:', error);
+                }
+            }
+            
+            async loadScenarios() {
+                try {
+                    const response = await fetch('/api/scenarios');
+                    const data = await response.json();
+                    this.updateScenarioSelector(data.scenarios);
+                } catch (error) {
+                    console.error('Failed to load scenarios:', error);
+                }
+            }
+            
+            updateInterface() {
+                if (!this.config) return;
+                
+                // Update branding
+                this.elements.companyName.textContent = this.config.company.name;
+                this.elements.companySubtitle.textContent = 
+                    `${this.config.company.industry} industry demo`;
+                
+                // Show demo info
+                this.elements.currentCompany.textContent = this.config.company.name;
+                this.elements.currentIndustry.textContent = this.config.company.industry;
+                this.elements.demoInfo.style.display = 'block';
+                
+                // Apply branding colors
+                if (this.config.branding?.primaryColor) {
+                    document.documentElement.style.setProperty(
+                        '--primary-color', 
+                        this.config.branding.primaryColor
+                    );
+                }
+            }
+            
+            updateScenarioSelector(scenarios) {
+                this.elements.scenarioSelect.innerHTML = '';
+                scenarios.forEach(scenario => {
+                    const option = document.createElement('option');
+                    option.value = scenario.id;
+                    option.textContent = `${scenario.name} - ${scenario.description}`;
+                    this.elements.scenarioSelect.appendChild(option);
+                });
+            }
+            
+            updateStatus(data) {
+                // Update Amplitude status with clearer messaging
+                if (data.amplitude_connected) {
+                    this.elements.amplitudeStatus.className = 'status-dot connected';
+                    this.elements.amplitudeText.textContent = 'Connected to Amplitude';
+                    this.elements.amplitudeHelp.textContent = 'Events are being sent to your Amplitude project';
+                    this.elements.amplitudeHelp.style.display = 'block';
+                } else {
+                    this.elements.amplitudeStatus.className = 'status-dot demo';
+                    this.elements.amplitudeText.textContent = '🎭 Demo Mode';
+                    this.elements.amplitudeHelp.innerHTML = 'Events are logged locally only. <a href="#" onclick="document.getElementById(\'setup-button\').click(); return false;" style="color: var(--primary-color, #3b82f6); text-decoration: none;">Add API key</a> to send to Amplitude.';
+                    this.elements.amplitudeHelp.style.display = 'block';
+                }
+                
+                // Update stats
+                if (data.stats) {
+                    this.elements.totalEvents.textContent = data.stats.totalEvents || 0;
+                    this.elements.connectedClients.textContent = data.connected_clients || 0;
+                    
+                    // Calculate success rate
+                    const successRate = data.stats.totalEvents > 0 ? 
+                        Math.round((data.stats.totalEvents / data.stats.totalEvents) * 100) : 0;
+                    this.elements.successRate.textContent = `${successRate}%`;
+                }
+                
+                this.isRunning = data.isRunning;
+                this.updateControls();
+            }
+            
+            updateControls() {
+                this.elements.startDemo.disabled = this.isRunning;
+                this.elements.stopDemo.disabled = !this.isRunning;
+            }
+            
+            addEventToStream(eventData) {
+                const eventItem = document.createElement('div');
+                
+                // Determine status and styling
+                let statusIcon, statusText, itemClass;
+                
+                if (eventData.amplitude_status?.success) {
+                    statusIcon = '✅';
+                    statusText = 'Sent to Amplitude';
+                    itemClass = 'event-item';
+                } else if (eventData.amplitude_status?.error?.includes('Demo mode')) {
+                    statusIcon = '🎭';
+                    statusText = 'Demo Mode';
+                    itemClass = 'event-item demo';
+                } else {
+                    statusIcon = '❌';
+                    statusText = 'Failed';
+                    itemClass = 'event-item failed';
+                }
+                
+                eventItem.className = itemClass;
+                
+                const timestamp = new Date(eventData.timestamp).toLocaleTimeString();
+                
+                eventItem.innerHTML = `
+                    <div>${statusIcon} ${eventData.event_type}</div>
+                    <div class="event-meta">
+                        User: ${eventData.user_id} | 
+                        Time: ${timestamp} | 
+                        Status: ${statusText}
+                        ${eventData.company ? ` | ${eventData.company}` : ''}
+                    </div>
+                `;
+                
+                this.elements.eventStream.insertBefore(eventItem, this.elements.eventStream.firstChild);
+                
+                // Keep only last 50 events
+                while (this.elements.eventStream.children.length > 50) {
+                    this.elements.eventStream.removeChild(this.elements.eventStream.lastChild);
+                }
+            }
+            
+            async startDemo() {
+                const scenario = this.elements.scenarioSelect.value;
+                
+                try {
+                    const response = await fetch('/api/demo/start', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ scenario })
+                    });
+                    
+                    if (response.ok) {
+                        console.log('Demo started');
+                    }
+                } catch (error) {
+                    console.error('Failed to start demo:', error);
+                }
+            }
+            
+            async stopDemo() {
+                try {
+                    const response = await fetch('/api/demo/stop', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    if (response.ok) {
+                        console.log('Demo stopped');
+                    }
+                } catch (error) {
+                    console.error('Failed to stop demo:', error);
+                }
+            }
+            
+            async triggerEvent() {
+                const scenario = this.elements.scenarioSelect.value;
+                
+                try {
+                    const response = await fetch('/api/events/trigger', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            eventType: 'Manual Test Event',
+                            properties: { 
+                                trigger_method: 'manual',
+                                scenario: scenario
+                            }
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        console.log('Event triggered');
+                    }
+                } catch (error) {
+                    console.error('Failed to trigger event:', error);
+                }
+            }
+            
+            async testConnection() {
+                try {
+                    this.elements.testConnection.disabled = true;
+                    this.elements.testConnection.textContent = '🧪 Testing...';
+                    
+                    const response = await fetch('/api/test-amplitude', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success && result.test_result?.success) {
+                        this.showSuccessMessage('✅ Amplitude connection successful!');
+                    } else {
+                        this.showErrorMessage(`❌ Connection failed: ${result.test_result?.error || 'Unknown error'}`);
+                    }
+                } catch (error) {
+                    this.showErrorMessage(`❌ Test failed: ${error.message}`);
+                } finally {
+                    this.elements.testConnection.disabled = false;
+                    this.elements.testConnection.textContent = '🧪 Test Connection';
+                }
+            }
+            
+            // Setup Modal Methods
+            async checkIfSetupNeeded() {
+                // Check if we have a proper configuration
+                try {
+                    const response = await fetch('/health');
+                    const health = await response.json();
+                    
+                    if (health.company === 'Demo Company' || !health.amplitude_connected) {
+                        // Show setup modal automatically if using default config
+                        setTimeout(() => this.showSetupModal(), 1000);
+                    }
+                } catch (error) {
+                    console.error('Failed to check setup status:', error);
+                }
+            }
+            
+            async showSetupModal() {
+                this.setupStep = 1;
+                this.elements.setupModal.style.display = 'block';
+                await this.loadAvailableIndustries();
+                this.updateSetupStep();
+            }
+            
+            hideSetupModal() {
+                this.elements.setupModal.style.display = 'none';
+            }
+            
+            async loadAvailableIndustries() {
+                try {
+                    const response = await fetch('/api/industries');
+                    const data = await response.json();
+                    this.availableIndustries = data.industries;
+                    this.renderIndustryGrid();
+                } catch (error) {
+                    console.error('Failed to load industries:', error);
+                    // Fallback industries
+                    this.availableIndustries = [
+                        { id: 'ecommerce', name: 'E-commerce', company: 'StyleHub', description: 'Fashion retail platform' },
+                        { id: 'saas', name: 'SaaS', company: 'DataFlow Pro', description: 'Analytics platform' },
+                        { id: 'iot', name: 'IoT', company: 'SmartHome Hub', description: 'Smart home devices' },
+                        { id: 'hospitality', name: 'Hospitality', company: 'Grand Vista Resort', description: 'Luxury resort' }
+                    ];
+                    this.renderIndustryGrid();
+                }
+            }
+            
+            renderIndustryGrid() {
+                this.elements.industryGrid.innerHTML = '';
+                
+                this.availableIndustries.forEach(industry => {
+                    const card = document.createElement('div');
+                    card.className = 'industry-card';
+                    card.dataset.industry = industry.id;
+                    
+                    card.innerHTML = `
+                        <h4>${industry.name}</h4>
+                        <div class="industry-company">${industry.company}</div>
+                        <div class="industry-description">${industry.description}</div>
+                        <div class="industry-stats">
+                            ${industry.scenarios || 4} scenarios • ${industry.products || 3} products
+                        </div>
+                    `;
+                    
+                    card.addEventListener('click', () => this.selectIndustry(industry));
+                    this.elements.industryGrid.appendChild(card);
+                });
+            }
+            
+            selectIndustry(industry) {
+                // Remove previous selection
+                this.elements.industryGrid.querySelectorAll('.industry-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                // Select new industry
+                const card = this.elements.industryGrid.querySelector(`[data-industry="${industry.id}"]`);
+                card.classList.add('selected');
+                
+                this.selectedIndustry = industry;
+                this.elements.setupNext.disabled = false;
+            }
+            
+            async loadScenariosPreview() {
+                if (!this.selectedIndustry) return;
+                
+                try {
+                    // Load scenarios for selected industry
+                    const response = await fetch(`/api/scenarios?industry=${this.selectedIndustry.id}`);
+                    const data = await response.json();
+                    this.renderScenariosPreview(data.scenarios);
+                } catch (error) {
+                    console.error('Failed to load scenarios:', error);
+                }
+            }
+            
+            renderScenariosPreview(scenarios) {
+                this.elements.scenariosPreview.innerHTML = '';
+                
+                scenarios.forEach(scenario => {
+                    const card = document.createElement('div');
+                    card.className = 'scenario-card';
+                    
+                    const eventsList = scenario.events.slice(0, 4).join(', ') + 
+                                     (scenario.events.length > 4 ? '...' : '');
+                    
+                    card.innerHTML = `
+                        <h4>${scenario.name}</h4>
+                        <div class="scenario-description">${scenario.description}</div>
+                        <div class="scenario-events">
+                            <strong>Sample Events:</strong> ${eventsList}
+                        </div>
+                    `;
+                    
+                    this.elements.scenariosPreview.appendChild(card);
+                });
+            }
+            
+            nextSetupStep() {
+                if (this.setupStep === 1 && !this.selectedIndustry) {
+                    alert('Please select an industry first');
+                    return;
+                }
+                
+                this.setupStep++;
+                
+                if (this.setupStep === 3) {
+                    this.loadScenariosPreview();
+                }
+                
+                this.updateSetupStep();
+            }
+            
+            prevSetupStep() {
+                this.setupStep--;
+                this.updateSetupStep();
+            }
+            
+            updateSetupStep() {
+                // Hide all steps
+                document.querySelectorAll('.setup-step').forEach(step => {
+                    step.style.display = 'none';
+                });
+                
+                // Show current step
+                if (this.setupStep === 1) {
+                    document.getElementById('step-industry').style.display = 'block';
+                    this.elements.setupBack.style.display = 'none';
+                    this.elements.setupNext.style.display = 'inline-block';
+                    this.elements.setupStart.style.display = 'none';
+                    this.elements.setupNext.disabled = !this.selectedIndustry;
+                } else if (this.setupStep === 2) {
+                    document.getElementById('step-config').style.display = 'block';
+                    this.elements.setupBack.style.display = 'inline-block';
+                    this.elements.setupNext.style.display = 'inline-block';
+                    this.elements.setupStart.style.display = 'none';
+                    this.elements.setupNext.disabled = false;
+                } else if (this.setupStep === 3) {
+                    document.getElementById('step-scenarios').style.display = 'block';
+                    this.elements.setupBack.style.display = 'inline-block';
+                    this.elements.setupNext.style.display = 'none';
+                    this.elements.setupStart.style.display = 'inline-block';
+                }
+            }
+            
+            async completeSetup() {
+                if (!this.selectedIndustry) {
+                    alert('Please select an industry');
+                    return;
+                }
+                
+                const apiKey = this.elements.apiKeyInput.value.trim();
+                
+                try {
+                    // Apply configuration
+                    const response = await fetch('/api/setup/apply', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            industry: this.selectedIndustry.id,
+                            apiKey: apiKey || null
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        this.hideSetupModal();
+                        
+                        // Reload configuration
+                        await this.loadConfiguration();
+                        
+                        // Show success message
+                        this.showSuccessMessage(`Demo configured for ${this.selectedIndustry.company}!`);
+                    } else {
+                        throw new Error('Failed to apply configuration');
+                    }
+                } catch (error) {
+                    console.error('Setup failed:', error);
+                    alert('Setup failed. Please try again.');
+                }
+            }
+            
+            showSuccessMessage(message) {
+                this.showNotification(message, '#10b981');
+            }
+            
+            showErrorMessage(message) {
+                this.showNotification(message, '#ef4444');
+            }
+            
+            showNotification(message, backgroundColor) {
+                // Simple notification
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: ${backgroundColor};
+                    color: white;
+                    padding: 1rem 1.5rem;
+                    border-radius: 6px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    z-index: 1001;
+                    font-weight: 500;
+                    max-width: 400px;
+                `;
+                notification.textContent = message;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 4000);
+            }
+        }
+        
+        // Initialize the interface when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new AmplitudeDemoInterface();
+        });
+    </script>
+    
+    <!-- Footer -->
+    <footer style="
+        margin-top: 3rem;
+        padding: 2rem;
+        text-align: center;
+        border-top: 1px solid #e2e8f0;
+        background: #f8fafc;
+        color: #64748b;
+        font-size: 0.9rem;
+    ">
+        <div style="margin-bottom: 1rem;">
+            <strong>Amplitude Demo Template</strong> - Created by <strong>James</strong>
+        </div>
+        <div style="margin-bottom: 1rem;">
+            💬 <strong>Feedback & Questions?</strong> I'd love to hear how you're using this demo!
+        </div>
+        <div style="font-size: 0.8rem; opacity: 0.8;">
+            Built with ❤️ for the Amplitude community • 
+            <a href="mailto:feedback@amplitude-demo.com" style="color: #3b82f6; text-decoration: none;">Contact for Support</a> • 
+            <a href="https://github.com/james/amplitude-demo-template" style="color: #3b82f6; text-decoration: none;">GitHub</a>
+        </div>
+    </footer>
+</body>
+</html>

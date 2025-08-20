@@ -1,0 +1,139 @@
+{
+  "company": {
+    "name": "StyleHub",
+    "industry": "ecommerce",
+    "website": "https://stylehub.com",
+    "description": "Fashion e-commerce platform with personalized shopping experiences"
+  },
+  "branding": {
+    "primaryColor": "#ec4899",
+    "secondaryColor": "#64748b"
+  },
+  "scenarios": {
+    "shopping": {
+      "name": "Shopping Journey",
+      "description": "Product discovery and purchase funnel",
+      "weight": 0.5,
+      "events": [
+        "Product Viewed",
+        "Product Added to Cart",
+        "Checkout Started",
+        "Purchase Completed",
+        "Product Reviewed"
+      ]
+    },
+    "marketing": {
+      "name": "Marketing & Discovery",
+      "description": "Traffic sources and campaign performance",
+      "weight": 0.3,
+      "events": [
+        "Page Viewed",
+        "Search Performed",
+        "Category Browsed",
+        "Promotion Clicked",
+        "Email Opened"
+      ]
+    },
+    "engagement": {
+      "name": "User Engagement",
+      "description": "Personalization and retention features",
+      "weight": 0.2,
+      "events": [
+        "Wishlist Added",
+        "Size Guide Viewed",
+        "Recommendation Clicked",
+        "Account Created",
+        "Newsletter Subscribed"
+      ]
+    }
+  },
+  "userJourney": {
+    "stages": [
+      {
+        "name": "browser",
+        "displayName": "Browser",
+        "duration": "0-1 sessions",
+        "conversionRate": 0.08,
+        "events": ["Product Viewed", "Category Browsed", "Search Performed"]
+      },
+      {
+        "name": "shopper",
+        "displayName": "Active Shopper",
+        "duration": "1-3 sessions",
+        "conversionRate": 0.25,
+        "events": ["Product Added to Cart", "Account Created", "Wishlist Added"]
+      },
+      {
+        "name": "customer",
+        "displayName": "Customer",
+        "duration": "1+ purchases",
+        "conversionRate": 0.60,
+        "events": ["Purchase Completed", "Product Reviewed", "Reorder"]
+      },
+      {
+        "name": "vip_customer",
+        "displayName": "VIP Customer",
+        "duration": "5+ purchases",
+        "conversionRate": 0.85,
+        "events": ["VIP Program Joined", "Early Access Used", "Referral Made"]
+      }
+    ]
+  },
+  "products": [
+    {
+      "id": "dress_001",
+      "name": "Summer Floral Dress",
+      "category": "dresses",
+      "price": 89.99,
+      "currency": "USD"
+    },
+    {
+      "id": "shoes_001",
+      "name": "Classic Leather Boots",
+      "category": "shoes",
+      "price": 149.99,
+      "currency": "USD"
+    },
+    {
+      "id": "bag_001",
+      "name": "Designer Handbag",
+      "category": "accessories",
+      "price": 299.99,
+      "currency": "USD"
+    }
+  ],
+  "attribution": {
+    "sources": [
+      {
+        "utm_source": "google",
+        "utm_medium": "cpc",
+        "utm_campaign": "fashion_keywords",
+        "weight": 0.25
+      },
+      {
+        "utm_source": "instagram",
+        "utm_medium": "social",
+        "utm_campaign": "influencer_partnership",
+        "weight": 0.30
+      },
+      {
+        "utm_source": "pinterest",
+        "utm_medium": "social",
+        "utm_campaign": "style_inspiration",
+        "weight": 0.20
+      },
+      {
+        "utm_source": "email",
+        "utm_medium": "email",
+        "utm_campaign": "weekly_newsletter",
+        "weight": 0.15
+      },
+      {
+        "utm_source": "organic",
+        "utm_medium": "organic",
+        "utm_campaign": null,
+        "weight": 0.10
+      }
+    ]
+  }
+}

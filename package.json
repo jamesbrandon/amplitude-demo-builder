@@ -1,0 +1,55 @@
+{
+  "name": "amplitude-demo-template",
+  "version": "1.0.0",
+  "description": "Professional Amplitude analytics demonstration platform with multi-industry support. Created by James for the Amplitude community.",
+  "main": "src/server/demo-server.js",
+  "scripts": {
+    "start": "node src/server/demo-server.js",
+    "dev": "nodemon src/server/demo-server.js",
+    "demo:ecommerce": "DEMO_INDUSTRY=ecommerce node src/server/demo-server.js",
+    "demo:saas": "DEMO_INDUSTRY=saas node src/server/demo-server.js",
+    "demo:iot": "DEMO_INDUSTRY=iot node src/server/demo-server.js",
+    "demo:hospitality": "DEMO_INDUSTRY=hospitality node src/server/demo-server.js",
+    "test": "node test/test-config.js",
+    "validate": "node scripts/validate-config.js",
+    "list-industries": "node scripts/list-industries.js",
+    "setup": "node scripts/setup.js"
+  },
+  "keywords": [
+    "amplitude",
+    "analytics",
+    "demo",
+    "template",
+    "configurable",
+    "multi-industry"
+  ],
+  "author": {
+    "name": "James",
+    "email": "feedback@amplitude-demo.com",
+    "url": "https://github.com/james"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@amplitude/analytics-node": "^1.3.5",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/amplitude-demo-template"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/amplitude-demo-template/issues"
+  },
+  "homepage": "https://github.com/your-org/amplitude-demo-template#readme"
+}
