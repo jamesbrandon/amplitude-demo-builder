@@ -5,6 +5,7 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
+const fs = require('fs');
 const cors = require('cors');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
@@ -470,6 +471,66 @@ class ConfigurableDemoServer {
         res.status(500).json({
           success: false,
           error: error.message
+        });
+      }
+    });
+
+    // Generate client-specific demo
+    this.app.post('/api/generate-client-demo', async (req, res) => {
+      try {
+        const { ClientDemoGenerator } = require('../../scripts/create-client-demo');
+        const generator = new ClientDemoGenerator();
+        
+        const clientConfig = req.body;
+        console.log(`🎯 Generating client demo for: ${clientConfig.clientName}`);
+        
+        // Generate the demo project
+        const result = await generator.generateClientDemoFromConfig(clientConfig);
+        
+        res.json({
+          success: true,
+          message: 'Client demo generated successfully',
+          projectName: result.projectName,
+          projectPath: result.projectPath,
+          downloadUrl: `/downloads/${result.projectName}.zip`
+        });
+      } catch (error) {
+        console.error('Client demo generation failed:', error);
+        res.status(500).json({
+          success: false,
+          message: error.message
+        });
+      }
+    });
+
+    // Serve client generator interface
+    this.app.get('/generator', (req, res) => {
+      res.sendFile(path.join(__dirname, '../../public/client-generator.html'));
+    });
+
+    // Handle download requests (redirect to project folder)
+    this.app.get('/downloads/:projectName', (req, res) => {
+      const projectName = req.params.projectName.replace('.zip', '');
+      const projectPath = path.join(process.cwd(), '..', projectName);
+      
+      if (fs.existsSync(projectPath)) {
+        res.json({
+          success: true,
+          message: 'Project generated successfully!',
+          projectName: projectName,
+          projectPath: projectPath,
+          instructions: [
+            `cd ../${projectName}`,
+            'npm install',
+            'npm start',
+            'Open http://localhost:3001'
+          ]
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: 'Project not found. Please generate it first.',
+          projectName: projectName
         });
       }
     });
@@ -1173,7 +1234,8 @@ class ConfigurableDemoServer {
   start() {
     this.server.listen(this.port, () => {
       console.log(`🚀 ${this.config.company.name} Demo Server running on port ${this.port}`);
-      console.log(`🌐 Open http://localhost:${this.port} to view the demo`);
+      console.log(`🌐 Demo Interface: http://localhost:${this.port}`);
+      console.log(`🎯 Client Generator: http://localhost:${this.port}/generator`);
       console.log(`📊 Industry: ${this.config.company.industry}`);
       console.log(`🎯 Available scenarios: ${Object.keys(this.config.scenarios).join(', ')}`);
       

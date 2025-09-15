@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amplitude Client Demo Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h3 {
+            color: #1f2937;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .event-builder {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px dashed #d1d5db;
+        }
+
+        .event-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .event-item input {
+            flex: 1;
+            margin-right: 10px;
+            margin-bottom: 0;
+        }
+
+        .btn-remove {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-add {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+        }
+
+        .preview-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .preview-code {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .success-message {
+            background: #10b981;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .success-message code {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9em;
+        }
+
+        .error-message {
+            background: #ef4444;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Client Demo Generator</h1>
+            <p>Create custom Amplitude demos tailored to specific clients</p>
+        </div>
+
+        <div class="form-container">
+            <form id="clientDemoForm">
+                <!-- Client Information -->
+                <div class="form-section">
+                    <h3>Client Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="clientName">Client/Company Name *</label>
+                            <input type="text" id="clientName" name="clientName" required 
+                                   placeholder="e.g., Acme Corp">
+                        </div>
+                        <div class="form-group">
+                            <label for="industry">Industry *</label>
+                            <select id="industry" name="industry" required>
+                                <option value="">Select Industry</option>
+                                <option value="ecommerce">E-commerce</option>
+                                <option value="saas">SaaS</option>
+                                <option value="fintech">FinTech</option>
+                                <option value="healthcare">Healthcare</option>
+                                <option value="education">Education</option>
+                                <option value="media">Media & Entertainment</option>
+                                <option value="gaming">Gaming</option>
+                                <option value="travel">Travel & Hospitality</option>
+                                <option value="real-estate">Real Estate</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="businessModel">Business Model *</label>
+                            <select id="businessModel" name="businessModel" required>
+                                <option value="">Select Model</option>
+                                <option value="b2c">B2C</option>
+                                <option value="b2b">B2B</option>
+                                <option value="marketplace">Marketplace</option>
+                                <option value="subscription">Subscription</option>
+                                <option value="freemium">Freemium</option>
+                                <option value="enterprise">Enterprise</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="revenueModel">Revenue Model *</label>
+                            <select id="revenueModel" name="revenueModel" required>
+                                <option value="">Select Revenue Model</option>
+                                <option value="subscription">Subscription</option>
+                                <option value="one-time-purchase">One-time Purchase</option>
+                                <option value="advertising">Advertising</option>
+                                <option value="commission">Commission</option>
+                                <option value="freemium">Freemium</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Amplitude Configuration -->
+                <div class="form-section">
+                    <h3>Amplitude Configuration</h3>
+                    <div class="form-group">
+                        <label for="amplitudeApiKey">Amplitude API Key</label>
+                        <input type="text" id="amplitudeApiKey" name="amplitudeApiKey" 
+                               placeholder="e.g., 1a2b3c4d5e6f7g8h9i0j (leave blank for demo mode)"
+                               pattern="[a-zA-Z0-9]{20,40}"
+                               onblur="validateApiKey(this)">
+                        <small style="color: #6b7280; font-size: 14px; margin-top: 5px; display: block;">
+                            📝 Optional: Provide your Amplitude API key to send real events. Leave blank to run in demo mode.
+                        </small>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="amplitudeProjectName">Amplitude Project Name</label>
+                            <input type="text" id="amplitudeProjectName" name="amplitudeProjectName" 
+                                   placeholder="e.g., Client Demo Project">
+                        </div>
+                        <div class="form-group">
+                            <label for="amplitudeEnvironment">Environment</label>
+                            <select id="amplitudeEnvironment" name="amplitudeEnvironment">
+                                <option value="demo">Demo Mode</option>
+                                <option value="development">Development</option>
+                                <option value="staging">Staging</option>
+                                <option value="production">Production</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demo Configuration -->
+                <div class="form-section">
+                    <h3>Demo Configuration</h3>
+                    <div class="form-group">
+                        <label for="demoGoals">Demo Objectives *</label>
+                        <textarea id="demoGoals" name="demoGoals" required 
+                                  placeholder="What do you want to showcase? e.g., User journey analysis, Revenue attribution, Feature adoption tracking"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="audienceLevel">Audience Level *</label>
+                            <select id="audienceLevel" name="audienceLevel" required>
+                                <option value="">Select Audience</option>
+                                <option value="executive">Executive (C-level)</option>
+                                <option value="marketing">Marketing Team</option>
+                                <option value="product">Product Team</option>
+                                <option value="technical">Technical Team</option>
+                                <option value="mixed">Mixed Audience</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="demoLength">Demo Length</label>
+                            <select id="demoLength" name="demoLength">
+                                <option value="15">15 minutes</option>
+                                <option value="30" selected>30 minutes</option>
+                                <option value="45">45 minutes</option>
+                                <option value="60">1 hour</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Configuration -->
+                <div class="form-section">
+                    <h3>Key Events to Track</h3>
+                    <div class="event-builder">
+                        <p style="margin-bottom: 15px; color: #6b7280;">Define the most important events for this client's demo:</p>
+                        <div id="eventsList">
+                            <div class="event-item">
+                                <input type="text" placeholder="Event name (e.g., User Signup)" value="User Signup">
+                                <button type="button" class="btn-remove" onclick="removeEvent(this)">Remove</button>
+                            </div>
+                            <div class="event-item">
+                                <input type="text" placeholder="Event name (e.g., Purchase Completed)" value="Purchase Completed">
+                                <button type="button" class="btn-remove" onclick="removeEvent(this)">Remove</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-add" onclick="addEvent()">+ Add Event</button>
+                    </div>
+                </div>
+
+                <!-- Historical Data Backfill -->
+                <div class="form-section">
+                    <h3>Historical Data Backfill</h3>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enableBackfill" name="enableBackfill" onchange="toggleBackfillOptions()">
+                            Generate historical data for more realistic demos
+                        </label>
+                        <small style="color: #6b7280; font-size: 14px; margin-top: 5px; display: block;">
+                            📈 Creates 2 weeks to 2 months of realistic user journeys and events using Amplitude's Batch API
+                        </small>
+                    </div>
+
+                    <div id="backfillOptions" style="display: none; margin-top: 15px; padding: 15px; background: #f9fafb; border-radius: 6px;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="backfillDays">Days of History</label>
+                                <select id="backfillDays" name="backfillDays">
+                                    <option value="14">2 weeks</option>
+                                    <option value="30" selected>1 month</option>
+                                    <option value="60">2 months</option>
+                                    <option value="90">3 months</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="usersPerDay">Users per Day</label>
+                                <input type="number" id="usersPerDay" name="usersPerDay" value="15" min="5" max="50">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="eventsPerUser">Events per User</label>
+                                <input type="number" id="eventsPerUser" name="eventsPerUser" value="12" min="5" max="30">
+                            </div>
+                            <div class="form-group">
+                                <label for="backfillMode">Backfill Timing</label>
+                                <select id="backfillMode" name="backfillMode">
+                                    <option value="immediate">Generate immediately</option>
+                                    <option value="on_start">Generate when demo starts</option>
+                                    <option value="manual">Manual trigger only</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <small style="color: #6b7280; font-size: 13px;">
+                                ⚠️ <strong>Note:</strong> Historical data generation requires a valid Amplitude API key and uses the Batch API. 
+                                Estimated events: <span id="estimatedEvents">5,400</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Options -->
+                <div class="form-section">
+                    <h3>Advanced Options</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="primaryColor">Brand Color</label>
+                            <input type="color" id="primaryColor" name="primaryColor" value="#2563eb">
+                        </div>
+                        <div class="form-group">
+                            <label for="eventInterval">Event Generation Interval (ms)</label>
+                            <input type="number" id="eventInterval" name="eventInterval" value="4000" min="1000" max="10000">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customProperties">Custom Event Properties (JSON)</label>
+                        <textarea id="customProperties" name="customProperties" 
+                                  placeholder='{"custom_property": "value", "client_tier": "enterprise"}'></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-generate">🚀 Generate Client Demo</button>
+            </form>
+
+            <div id="successMessage" class="success-message">
+                <strong>✅ Demo Generated Successfully!</strong><br>
+                Your client-specific demo has been created. Check the downloads folder for the generated files.
+            </div>
+
+            <div id="errorMessage" class="error-message">
+                <strong>❌ Generation Failed</strong><br>
+                <span id="errorText">Please check your inputs and try again.</span>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="preview-section" id="previewSection" style="display: none;">
+                <h3>Configuration Preview</h3>
+                <div class="preview-code" id="previewCode"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let eventCounter = 2;
+
+        function addEvent() {
+            const eventsList = document.getElementById('eventsList');
+            const eventItem = document.createElement('div');
+            eventItem.className = 'event-item';
+            eventItem.innerHTML = `
+                <input type="text" placeholder="Event name (e.g., Feature Used)">
+                <button type="button" class="btn-remove" onclick="removeEvent(this)">Remove</button>
+            `;
+            eventsList.appendChild(eventItem);
+            eventCounter++;
+        }
+
+        function removeEvent(button) {
+            const eventsList = document.getElementById('eventsList');
+            if (eventsList.children.length > 1) {
+                button.parentElement.remove();
+            }
+        }
+
+        function collectEvents() {
+            const eventInputs = document.querySelectorAll('#eventsList input');
+            return Array.from(eventInputs)
+                .map(input => input.value.trim())
+                .filter(value => value.length > 0);
+        }
+
+        function generatePreview() {
+            const formData = new FormData(document.getElementById('clientDemoForm'));
+            const events = collectEvents();
+            
+            const config = {
+                company: {
+                    name: formData.get('clientName'),
+                    industry: formData.get('industry'),
+                    businessModel: formData.get('businessModel')
+                },
+                demoContext: {
+                    objectives: formData.get('demoGoals'),
+                    audienceLevel: formData.get('audienceLevel'),
+                    demoLength: formData.get('demoLength')
+                },
+                amplitude: {
+                    apiKey: formData.get('amplitudeApiKey'),
+                    projectName: formData.get('amplitudeProjectName'),
+                    environment: formData.get('amplitudeEnvironment')
+                },
+                keyEvents: events,
+                revenueModel: formData.get('revenueModel'),
+                branding: {
+                    primaryColor: formData.get('primaryColor')
+                },
+                simulation: {
+                    eventInterval: parseInt(formData.get('eventInterval'))
+                }
+            };
+
+            return JSON.stringify(config, null, 2);
+        }
+
+        document.getElementById('clientDemoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const events = collectEvents();
+            
+            if (events.length === 0) {
+                showError('Please add at least one event to track.');
+                return;
+            }
+
+            // Prepare the client demo configuration
+            const clientConfig = {
+                clientName: formData.get('clientName'),
+                industry: formData.get('industry'),
+                businessModel: formData.get('businessModel'),
+                revenueModel: formData.get('revenueModel'),
+                demoGoals: formData.get('demoGoals'),
+                audienceLevel: formData.get('audienceLevel'),
+                demoLength: formData.get('demoLength'),
+                primaryEvents: events.join(', '),
+                primaryColor: formData.get('primaryColor'),
+                eventInterval: formData.get('eventInterval'),
+                customProperties: formData.get('customProperties'),
+                // Amplitude configuration
+                amplitudeApiKey: formData.get('amplitudeApiKey'),
+                amplitudeProjectName: formData.get('amplitudeProjectName'),
+                amplitudeEnvironment: formData.get('amplitudeEnvironment'),
+                // Historical data backfill
+                enableBackfill: formData.get('enableBackfill') === 'on',
+                backfillDays: parseInt(formData.get('backfillDays')) || 30,
+                usersPerDay: parseInt(formData.get('usersPerDay')) || 15,
+                eventsPerUser: parseInt(formData.get('eventsPerUser')) || 12,
+                backfillMode: formData.get('backfillMode') || 'immediate'
+            };
+
+            try {
+                // Show preview
+                document.getElementById('previewCode').textContent = generatePreview();
+                document.getElementById('previewSection').style.display = 'block';
+
+                // Send to server for generation
+                const response = await fetch('/api/generate-client-demo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(clientConfig)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showSuccess(`
+                        <strong>✅ Demo Generated Successfully!</strong><br>
+                        <strong>Project:</strong> ${result.projectName}<br>
+                        <strong>Location:</strong> ${result.projectPath}<br><br>
+                        <strong>Next Steps:</strong><br>
+                        1. Open terminal/command prompt<br>
+                        2. Navigate: <code>cd ${result.projectName}</code><br>
+                        3. Install: <code>npm install</code><br>
+                        4. Start: <code>npm start</code><br>
+                        5. Open: <code>http://localhost:3001</code>
+                    `);
+                } else {
+                    const error = await response.json();
+                    showError(error.message || 'Failed to generate demo');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            }
+        });
+
+        function showSuccess(message) {
+            const successEl = document.getElementById('successMessage');
+            successEl.innerHTML = '<strong>✅ Demo Generated Successfully!</strong><br>' + message;
+            successEl.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            // Scroll to message
+            successEl.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            document.getElementById('errorText').textContent = message;
+            errorEl.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+            
+            // Scroll to message
+            errorEl.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // API Key validation
+        function validateApiKey(input) {
+            const apiKey = input.value.trim();
+            if (apiKey && (apiKey.length < 20 || apiKey.length > 40 || !/^[a-zA-Z0-9]+$/.test(apiKey))) {
+                input.style.borderColor = '#ef4444';
+                showError('API key should be 20-40 alphanumeric characters');
+            } else {
+                input.style.borderColor = '#10b981';
+            }
+        }
+
+        // Toggle backfill options
+        function toggleBackfillOptions() {
+            const checkbox = document.getElementById('enableBackfill');
+            const options = document.getElementById('backfillOptions');
+            options.style.display = checkbox.checked ? 'block' : 'none';
+            
+            if (checkbox.checked) {
+                updateEstimatedEvents();
+            }
+        }
+
+        // Update estimated events calculation
+        function updateEstimatedEvents() {
+            const days = parseInt(document.getElementById('backfillDays').value) || 30;
+            const usersPerDay = parseInt(document.getElementById('usersPerDay').value) || 15;
+            const eventsPerUser = parseInt(document.getElementById('eventsPerUser').value) || 12;
+            
+            const totalEvents = days * usersPerDay * eventsPerUser;
+            document.getElementById('estimatedEvents').textContent = totalEvents.toLocaleString();
+        }
+
+        // Add event listeners for backfill calculation
+        document.addEventListener('DOMContentLoaded', function() {
+            ['backfillDays', 'usersPerDay', 'eventsPerUser'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', updateEstimatedEvents);
+                    element.addEventListener('input', updateEstimatedEvents);
+                }
+            });
+        });
+
+        // Auto-generate preview on form changes
+        document.getElementById('clientDemoForm').addEventListener('input', function() {
+            if (document.getElementById('clientName').value) {
+                document.getElementById('previewCode').textContent = generatePreview();
+                document.getElementById('previewSection').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

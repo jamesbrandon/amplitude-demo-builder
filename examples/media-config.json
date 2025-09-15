@@ -1,0 +1,180 @@
+{
+  "company": {
+    "name": "StreamVibe",
+    "industry": "media",
+    "website": "https://streamvibe.com",
+    "description": "Digital streaming platform with personalized content discovery and social features"
+  },
+  "branding": {
+    "primaryColor": "#ea580c",
+    "secondaryColor": "#64748b"
+  },
+  "scenarios": {
+    "content_consumption": {
+      "name": "Content Consumption",
+      "description": "Video streaming, music listening, and content engagement",
+      "weight": 0.5,
+      "events": [
+        "Video Started",
+        "Video Completed",
+        "Video Paused",
+        "Video Resumed",
+        "Content Liked",
+        "Content Shared",
+        "Playlist Created",
+        "Content Added to Watchlist"
+      ]
+    },
+    "discovery": {
+      "name": "Content Discovery",
+      "description": "Search, browse, and recommendation interactions",
+      "weight": 0.3,
+      "events": [
+        "Search Performed",
+        "Category Browsed",
+        "Recommendation Clicked",
+        "Trending Content Viewed",
+        "Genre Explored",
+        "Content Previewed"
+      ]
+    },
+    "social_engagement": {
+      "name": "Social & Community",
+      "description": "Social features and community interactions",
+      "weight": 0.2,
+      "events": [
+        "Comment Posted",
+        "Content Rated",
+        "User Followed",
+        "Content Shared",
+        "Live Chat Participated",
+        "Community Post Created"
+      ]
+    }
+  },
+  "userJourney": {
+    "stages": [
+      {
+        "name": "visitor",
+        "displayName": "Anonymous Visitor",
+        "duration": "0-1 sessions",
+        "conversionRate": 0.20,
+        "events": ["Landing Page Viewed", "Content Previewed", "Trailer Watched"]
+      },
+      {
+        "name": "free_user",
+        "displayName": "Free User",
+        "duration": "1-7 days",
+        "conversionRate": 0.15,
+        "events": ["Account Created", "Free Content Watched", "Ad Viewed"]
+      },
+      {
+        "name": "trial_user",
+        "displayName": "Trial User",
+        "duration": "7-30 days",
+        "conversionRate": 0.35,
+        "events": ["Trial Started", "Premium Content Accessed", "Multiple Sessions"]
+      },
+      {
+        "name": "subscriber",
+        "displayName": "Paid Subscriber",
+        "duration": "30+ days",
+        "conversionRate": 0.85,
+        "events": ["Subscription Purchased", "Binge Watching", "Content Downloaded"]
+      },
+      {
+        "name": "power_user",
+        "displayName": "Power User",
+        "duration": "90+ days",
+        "conversionRate": 0.95,
+        "events": ["Multiple Device Usage", "Content Created", "Referral Made"]
+      }
+    ]
+  },
+  "products": [
+    {
+      "id": "basic_subscription",
+      "name": "Basic Streaming",
+      "category": "subscription",
+      "price": 8.99,
+      "currency": "USD",
+      "features": ["HD streaming", "2 devices", "Limited ads"]
+    },
+    {
+      "id": "premium_subscription",
+      "name": "Premium Streaming",
+      "category": "subscription", 
+      "price": 15.99,
+      "currency": "USD",
+      "features": ["4K streaming", "4 devices", "No ads", "Downloads"]
+    },
+    {
+      "id": "family_subscription",
+      "name": "Family Plan",
+      "category": "subscription",
+      "price": 22.99,
+      "currency": "USD",
+      "features": ["4K streaming", "6 devices", "No ads", "Downloads", "Kids profiles"]
+    },
+    {
+      "id": "premium_movie",
+      "name": "Premium Movie Rental",
+      "category": "rental",
+      "price": 5.99,
+      "currency": "USD",
+      "features": ["48-hour access", "HD quality"]
+    }
+  ],
+  "attribution": {
+    "sources": [
+      {
+        "utm_source": "youtube",
+        "utm_medium": "video",
+        "utm_campaign": "trailer_promotion",
+        "weight": 0.25
+      },
+      {
+        "utm_source": "instagram",
+        "utm_medium": "social",
+        "utm_campaign": "influencer_partnership",
+        "weight": 0.20
+      },
+      {
+        "utm_source": "tiktok",
+        "utm_medium": "social",
+        "utm_campaign": "viral_content",
+        "weight": 0.15
+      },
+      {
+        "utm_source": "google",
+        "utm_medium": "cpc",
+        "utm_campaign": "streaming_keywords",
+        "weight": 0.15
+      },
+      {
+        "utm_source": "connected_tv",
+        "utm_medium": "display",
+        "utm_campaign": "tv_advertising",
+        "weight": 0.10
+      },
+      {
+        "utm_source": "organic",
+        "utm_medium": "organic",
+        "utm_campaign": null,
+        "weight": 0.15
+      }
+    ]
+  },
+  "contentLibrary": {
+    "genres": [
+      "Action", "Comedy", "Drama", "Horror", "Sci-Fi", "Documentary", 
+      "Romance", "Thriller", "Animation", "Music", "Sports", "News"
+    ],
+    "contentTypes": [
+      "Movie", "TV Series", "Documentary", "Music Video", "Podcast", 
+      "Live Stream", "Short Film", "Concert", "Sports Event"
+    ],
+    "languages": ["English", "Spanish", "French", "German", "Japanese", "Korean"],
+    "ratings": ["G", "PG", "PG-13", "R", "TV-Y", "TV-PG", "TV-14", "TV-MA"]
+  }
+}

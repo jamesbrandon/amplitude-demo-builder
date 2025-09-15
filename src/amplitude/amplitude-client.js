@@ -429,29 +429,29 @@ class AmplitudeClient {
   formatAttributionProperties(utmParameters) {
     const attribution = {};
 
-    // Standard initial/first-touch attribution (only set if not already present)
+    // Both initial (first-touch) and current (last-touch) attribution
     if (utmParameters.utm_source) {
-      attribution['initial_utm_source'] = utmParameters.utm_source;
+      attribution['initial_utm_source'] = utmParameters.utm_source; // First-touch
       attribution['utm_source'] = utmParameters.utm_source; // Current/last-touch
     }
 
     if (utmParameters.utm_medium) {
-      attribution['initial_utm_medium'] = utmParameters.utm_medium;
+      attribution['initial_utm_medium'] = utmParameters.utm_medium; // First-touch
       attribution['utm_medium'] = utmParameters.utm_medium; // Current/last-touch
     }
 
     if (utmParameters.utm_campaign) {
-      attribution['initial_utm_campaign'] = utmParameters.utm_campaign;
+      attribution['initial_utm_campaign'] = utmParameters.utm_campaign; // First-touch
       attribution['utm_campaign'] = utmParameters.utm_campaign; // Current/last-touch
     }
 
     if (utmParameters.utm_content) {
-      attribution['initial_utm_content'] = utmParameters.utm_content;
+      attribution['initial_utm_content'] = utmParameters.utm_content; // First-touch
       attribution['utm_content'] = utmParameters.utm_content; // Current/last-touch
     }
 
     if (utmParameters.utm_term) {
-      attribution['initial_utm_term'] = utmParameters.utm_term;
+      attribution['initial_utm_term'] = utmParameters.utm_term; // First-touch
       attribution['utm_term'] = utmParameters.utm_term; // Current/last-touch
     }
 

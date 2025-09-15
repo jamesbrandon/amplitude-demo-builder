@@ -4,22 +4,27 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Environment variables
+# Environment files
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
+# Generated client demos
+generated-demos/
+*-amplitude-demo/
+*.zip
+
+# Logs
+logs/
+*.log
+
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
-
-# Logs
-logs
-*.log
 
 # Coverage directory used by tools like istanbul
 coverage/
@@ -27,9 +32,6 @@ coverage/
 
 # nyc test coverage
 .nyc_output
-
-# Dependency directories
-jspm_packages/
 
 # Optional npm cache directory
 .npm
@@ -63,13 +65,27 @@ jspm_packages/
 .nuxt
 dist
 
-# Storybook build outputs
-.out
-.storybook-out
+# Serverless directories
+.serverless/
 
-# Temporary folders
-tmp/
-temp/
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
 
 # IDE files
 .vscode/
@@ -87,6 +103,14 @@ temp/
 ehthumbs.db
 Thumbs.db
 
-# Demo specific
-test-results/
-debug-*.js
+# Test files
+*test*.js
+test-*.js
+demo-*.js
+quick-*.js
+final-*.js
+
+# Temporary files
+temp/
+tmp/
+*.tmp

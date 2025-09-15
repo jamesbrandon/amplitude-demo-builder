@@ -1,86 +1,152 @@
-# Amplitude Demo Template
+# 🎯 Amplitude Demo Builder
 
-A comprehensive, industry-agnostic analytics demonstration platform for Amplitude. Generate realistic user events across multiple industries with proper attribution, user journeys, and business context.
+**Professional client demo generator for Amplitude Analytics**
 
-## ✨ Features
+Create realistic, industry-specific Amplitude demos with historical data backfill, proper event structure, and client branding. Perfect for sales demos, proof-of-concepts, and training.
 
-- **🏭 Multi-Industry Support**: E-commerce, SaaS, IoT, Hospitality, and more
-- **🎯 Realistic User Journeys**: Progressive user stages with contextual events  
-- **📊 Attribution Tracking**: UTM parameters and marketing channel attribution
-- **💰 Revenue Events**: Proper revenue tracking with Amplitude's special properties
-- **📈 Real-time Dashboard**: Live event streaming and statistics
-- **⚙️ Web-based Setup**: No configuration files needed - set up via browser
-- **🎨 Professional Events**: Rich, contextual properties for each event type
+## ✨ Key Features
+
+- **� Multib-Industry Support**: E-commerce, SaaS, FinTech, Media, Healthcare, IoT, Hospitality
+- **� Hivstorical Data Backfill**: 2 weeks to 3 months using Amplitude's Batch API
+- **🎯 Realistic User Journeys**: Progressive stages with proper conversion rates
+- **📊 Enhanced Attribution**: Both initial and current UTM parameters
+- **💰 Revenue Tracking**: Proper Amplitude revenue event formatting
+- **🌐 Web Generator**: User-friendly form-based demo creation
+- **⚙️ CLI Generator**: Interactive command-line demo builder
+- **🎨 Client Branding**: Custom colors, logos, and messaging
+- **🔧 API Key Integration**: Pre-configured Amplitude connections
+- **🐳 Docker Ready**: Complete deployment configurations
 
 ## 🚀 Quick Start
 
-1. **Install and Run**
-   ```bash
-   git clone <repository>
-   cd amplitude-demo-template
-   npm install
-   npm start
-   ```
+### **Option 1: Web Generator (Recommended)**
+```bash
+git clone https://github.com/yourusername/amplitude-demo-builder.git
+cd amplitude-demo-builder
+npm install
+npm start
+```
+Visit `http://localhost:3001/generator` and create your client demo!
 
-2. **Open Browser**
-   Navigate to `http://localhost:3010` and follow the setup wizard
+### **Option 2: CLI Generator**
+```bash
+npm run create-client-demo
+# Follow interactive prompts for client details
+```
 
-3. **Configure via Web UI**
-   - Choose your industry (E-commerce, SaaS, IoT, Hospitality)
-   - Enter your Amplitude API key (or leave blank for demo mode)
-   - Start generating realistic events!
+### **Option 3: Template Setup**
+```bash
+npm run setup-template
+# Prepares the system for generating multiple client demos
+```
 
-## 🎯 No Configuration Required
+## 🎯 What Makes This Special
 
-The demo is designed to work out-of-the-box:
-- **Demo Mode**: Works without an Amplitude API key for testing
-- **Web Setup**: Configure everything through the browser interface
-- **Industry Templates**: Pre-built configurations for common industries
-- **Instant Start**: Generate events immediately after setup
+### **Professional Client Demos**
+- **Complete Projects**: Each generated demo is a full Node.js application
+- **Client Branding**: Custom colors, company names, and messaging
+- **Industry Alignment**: Events and properties match client's business
+- **API Key Integration**: Pre-configured with client's Amplitude project
 
-## 📊 Event Types by Industry
+### **Historical Data Backfill** 🆕
+- **Batch API Integration**: Uses Amplitude's `/batch` endpoint efficiently
+- **Realistic Timelines**: 2 weeks to 3 months of historical events
+- **User Journey Progression**: Visitors → Prospects → Customers → Power Users
+- **Configurable Volume**: Customize users per day and events per user
 
-### 🛒 E-commerce
-- Product Added to Cart, Checkout Started, Purchase Completed
-- Product Reviewed, Wishlist Added, Search Performed
-- Email Opened, Newsletter Subscribed
+### **Enhanced Attribution** 🆕
+- **Dual UTM Tracking**: Both `initial_utm_*` and `utm_*` parameters
+- **First-Touch Attribution**: Capture original acquisition source
+- **Last-Touch Attribution**: Track current campaign performance
+- **Marketing Channel Classification**: Automatic channel grouping
 
-### 💼 SaaS  
-- Dashboard Viewed, Report Generated, API Called
-- Feature Used, Integration Connected, Account Upgraded
-- Trial Started, Subscription Purchased
+## 📊 Industry Templates
 
-### 🏠 IoT
-- Device Activated, Sensor Data Received, Automation Triggered
-- Firmware Updated, Alert Generated, Energy Saved
+### 🛒 **E-commerce**
+- Product views, cart actions, purchases, reviews
+- Search, recommendations, wishlist management
+- Email campaigns, loyalty programs
 
-### 🏨 Hospitality
-- Room Search, Booking Completed, Check-in/Check-out
-- Amenity Used, Room Service Ordered, Spa Service Booked
-- Loyalty Program Joined, Points Earned
+### 💼 **SaaS**  
+- Feature usage, dashboard views, API calls
+- Integrations, reports, account management
+- Trial conversions, subscription upgrades
 
-## 🔧 Advanced Configuration
+### 💰 **FinTech**
+- Account opening, transactions, investments
+- KYC processes, loan applications, credit checks
+- Portfolio management, payment processing
 
-### Environment Variables (Optional)
-- `DEMO_PORT`: Server port (default: 3010)
-- `DEMO_INDUSTRY`: Default industry
-- `EVENT_INTERVAL`: Event generation interval (default: 5000ms)
+### � S**Media & Entertainment** 🆕
+- Video streaming, content consumption, ratings
+- Recommendations, social sharing, playlists
+- Subscription tiers, premium content access
 
-### Custom Industries
+### 🏥 **Healthcare**
+- Appointments, treatments, patient records
+- Telemedicine, prescription management
+- Health monitoring, wellness programs
+
+### 🏠 **IoT**
+- Device activation, sensor data, automations
+- Energy monitoring, security alerts
+- Firmware updates, predictive maintenance
+
+### 🏨 **Hospitality**
+- Bookings, check-ins, amenity usage
+- Room service, spa services, loyalty programs
+- Guest feedback, mobile app interactions
+
+## 🎨 Generated Demo Features
+
+Each generated client demo includes:
+
+### **Complete Application**
+- ✅ Node.js server with Express and WebSocket
+- ✅ Professional web interface with client branding
+- ✅ Real-time event streaming and statistics
+- ✅ Amplitude API integration with error handling
+
+### **Historical Data Generation**
+- ✅ Batch API client for efficient data upload
+- ✅ Realistic user journeys with stage progression
+- ✅ Industry-specific events and properties
+- ✅ Configurable volume and timeline
+
+### **Deployment Ready**
+- ✅ Docker configuration with docker-compose
+- ✅ Environment variable management
+- ✅ Health check endpoints
+- ✅ Production logging and monitoring
+
+## 🔧 Advanced Usage
+
+### **Custom Industry Templates**
 Add new configurations in `examples/` directory:
 ```json
 {
   "company": {
-    "name": "Your Company",
+    "name": "Your Industry Demo",
     "industry": "custom",
-    "description": "Custom industry demo"
+    "description": "Custom industry demonstration"
+  },
+  "contentLibrary": {
+    "customData": ["item1", "item2", "item3"]
   },
   "scenarios": {
-    "business": {
+    "primary": {
       "events": ["Custom Event 1", "Custom Event 2"]
     }
   }
 }
+```
+
+### **Environment Variables**
+```bash
+AMPLITUDE_API_KEY=your_api_key_here
+DEMO_PORT=3001
+DEMO_INDUSTRY=saas
+EVENT_INTERVAL=4000
 ```
 
 ## 🏗️ Architecture
@@ -117,24 +183,65 @@ The demo is designed to be easily shared:
 3. **Multiple Industries**: Choose the most relevant industry
 4. **Instant Results**: See events immediately in the interface
 
-## 👨‍💻 Author & Feedback
+## 📈 Perfect for
 
-**Created by James** - Amplitude Analytics Expert
+### **Sales Teams**
+- Generate professional client demos in minutes
+- Industry-specific events that resonate with prospects
+- Historical data that makes demos credible
+- Branded experience with client's colors and messaging
 
-💬 **Feedback & Questions**: I'd love to hear how you're using this demo template! 
-- Found a bug? Have a feature request? 
-- Want to add a new industry template?
-- Need help with your Amplitude implementation?
+### **Solutions Engineers**
+- Technical proof-of-concepts with proper event structure
+- Demonstrate Amplitude best practices
+- Show realistic user journeys and conversion funnels
+- Test dashboard configurations with authentic data
 
-**Get in touch:**
-- Open an issue on GitHub
-- Connect with me for Amplitude consulting and implementation support
-- Share your success stories and use cases!
+### **Consultants & Partners**
+- Deliver complete demo projects to clients
+- Multiple industry templates for different verticals
+- Docker deployment for consistent environments
+- Professional documentation and setup guides
+
+## 🏗️ Architecture
+
+```
+amplitude-demo-builder/
+├── src/
+│   ├── amplitude/          # Amplitude client & batch API
+│   ├── generators/         # Event property generators
+│   └── server/            # Express server & WebSocket
+├── examples/              # Industry configuration templates
+├── public/                # Web generator interface
+├── scripts/               # CLI generator & setup tools
+└── docs/                 # Documentation & guides
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+- 🐛 **Bug Reports**: Open an issue with reproduction steps
+- 💡 **Feature Requests**: Describe your use case and proposed solution
+- 🏭 **New Industries**: Submit industry templates with realistic events
+- 📖 **Documentation**: Help improve guides and examples
 
 ## 📝 License
 
-MIT License - Perfect for demos, training, and proof-of-concepts.
+MIT License - Perfect for demos, training, and commercial use.
+
+## 🙏 Acknowledgments
+
+Built for the Amplitude community to showcase analytics best practices and accelerate client success.
 
 ---
 
-*Built with ❤️ for the Amplitude community. Happy analyzing! 📊*
+**Ready to create amazing Amplitude demos?** 🚀
+
+```bash
+git clone https://github.com/yourusername/amplitude-demo-builder.git
+cd amplitude-demo-builder
+npm install
+npm start
+# Visit http://localhost:3001/generator
+```

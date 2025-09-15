@@ -1,7 +1,7 @@
 {
-  "name": "amplitude-demo-template",
-  "version": "1.0.0",
-  "description": "Professional Amplitude analytics demonstration platform with multi-industry support. Created by James for the Amplitude community.",
+  "name": "amplitude-demo-builder",
+  "version": "2.0.0",
+  "description": "Professional client demo generator for Amplitude Analytics with historical data backfill, multi-industry support, and enhanced attribution tracking.",
   "main": "src/server/demo-server.js",
   "scripts": {
     "start": "node src/server/demo-server.js",
@@ -13,15 +13,22 @@
     "test": "node test/test-config.js",
     "validate": "node scripts/validate-config.js",
     "list-industries": "node scripts/list-industries.js",
-    "setup": "node scripts/setup.js"
+    "setup": "node scripts/setup.js",
+    "setup-template": "node scripts/setup-template.js",
+    "create-client-demo": "node scripts/create-client-demo.js",
+    "generate": "node scripts/create-client-demo.js"
   },
   "keywords": [
     "amplitude",
     "analytics",
     "demo",
-    "template",
-    "configurable",
-    "multi-industry"
+    "client-generator",
+    "historical-data",
+    "batch-api",
+    "multi-industry",
+    "utm-attribution",
+    "sales-demo",
+    "proof-of-concept"
   ],
   "author": {
     "name": "James",
@@ -46,10 +53,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/amplitude-demo-template"
+    "url": "https://github.com/yourusername/amplitude-demo-builder"
   },
   "bugs": {
-    "url": "https://github.com/your-org/amplitude-demo-template/issues"
+    "url": "https://github.com/yourusername/amplitude-demo-builder/issues"
   },
-  "homepage": "https://github.com/your-org/amplitude-demo-template#readme"
+  "homepage": "https://github.com/yourusername/amplitude-demo-builder#readme"
 }

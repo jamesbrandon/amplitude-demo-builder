@@ -120,6 +120,8 @@ class EventGenerator {
         return this.getIotTemplates();
       case 'hospitality':
         return this.getHospitalityTemplates();
+      case 'media':
+        return this.getMediaTemplates();
       default:
         return {};
     }
@@ -1185,6 +1187,277 @@ class EventGenerator {
     if (eventType.includes('Sign') || eventType.includes('Account') || eventType.includes('Check-in')) return 'authentication';
     if (eventType.includes('Amenity') || eventType.includes('Service') || eventType.includes('Room Service')) return 'service_usage';
     return 'interaction';
+  }
+
+  // Media & Entertainment specific templates
+  getMediaTemplates() {
+    return {
+      'Video Started': (userSession, config) => {
+        const content = this.getMediaContent(config);
+        return {
+          content_id: content.id,
+          content_title: content.title,
+          content_type: content.type,
+          genre: content.genre,
+          duration_seconds: content.duration,
+          quality: this.getVideoQuality(userSession),
+          device_type: userSession.platform,
+          is_premium: content.isPremium,
+          season_number: content.seasonNumber,
+          episode_number: content.episodeNumber,
+          content_rating: content.rating,
+          language: content.language,
+          subtitle_enabled: Math.random() > 0.6,
+          autoplay: Math.random() > 0.7,
+          source: this.getContentSource()
+        };
+      },
+
+      'Video Completed': (userSession, config) => {
+        const content = this.getMediaContent(config);
+        const watchTime = Math.floor(content.duration * (0.8 + Math.random() * 0.2)); // 80-100% completion
+        return {
+          content_id: content.id,
+          content_title: content.title,
+          content_type: content.type,
+          genre: content.genre,
+          total_duration_seconds: content.duration,
+          watch_time_seconds: watchTime,
+          completion_rate: Math.round((watchTime / content.duration) * 100) / 100,
+          quality: this.getVideoQuality(userSession),
+          device_type: userSession.platform,
+          is_premium: content.isPremium,
+          skipped_intro: Math.random() > 0.4,
+          skipped_credits: Math.random() > 0.6,
+          buffering_events: Math.floor(Math.random() * 3),
+          average_bitrate: Math.floor(Math.random() * 5000) + 2000
+        };
+      },
+
+      'Content Liked': (userSession, config) => {
+        const content = this.getMediaContent(config);
+        return {
+          content_id: content.id,
+          content_title: content.title,
+          content_type: content.type,
+          genre: content.genre,
+          rating_given: Math.floor(Math.random() * 2) + 4, // 4-5 stars for liked content
+          is_premium: content.isPremium,
+          watch_progress_when_liked: Math.floor(Math.random() * 100),
+          previous_interaction: this.getPreviousInteraction(),
+          recommendation_source: this.getRecommendationSource()
+        };
+      },
+
+      'Content Shared': (userSession, config) => {
+        const content = this.getMediaContent(config);
+        return {
+          content_id: content.id,
+          content_title: content.title,
+          content_type: content.type,
+          genre: content.genre,
+          share_platform: this.getSharePlatform(),
+          share_type: this.getShareType(),
+          custom_message_added: Math.random() > 0.7,
+          timestamp_shared: Math.floor(Math.random() * content.duration),
+          is_premium: content.isPremium,
+          audience_size: this.getAudienceSize()
+        };
+      },
+
+      'Recommendation Clicked': (userSession, config) => {
+        const content = this.getMediaContent(config);
+        return {
+          content_id: content.id,
+          content_title: content.title,
+          content_type: content.type,
+          genre: content.genre,
+          recommendation_type: this.getRecommendationType(),
+          recommendation_position: Math.floor(Math.random() * 10) + 1,
+          recommendation_algorithm: this.getRecommendationAlgorithm(),
+          confidence_score: Math.round((Math.random() * 0.4 + 0.6) * 100) / 100,
+          similar_to_content_id: this.getRandomContentId(),
+          is_premium: content.isPremium,
+          personalization_factors: this.getPersonalizationFactors()
+        };
+      },
+
+      'Subscription Purchased': (userSession, config) => {
+        const subscription = this.getMediaSubscription(config);
+        return {
+          subscription_id: subscription.id,
+          subscription_name: subscription.name,
+          subscription_tier: subscription.tier,
+          price: subscription.price,
+          currency: subscription.currency,
+          billing_cycle: subscription.billingCycle,
+          features: Array.isArray(subscription.features) ? subscription.features.join(', ') : subscription.features,
+          trial_used: Math.random() > 0.3,
+          upgrade_from_tier: this.getPreviousTier(userSession),
+          payment_method: this.getPaymentMethod(),
+          auto_renewal: Math.random() > 0.2,
+          promotional_discount: Math.random() > 0.7 ? 0.2 : 0,
+          revenue: subscription.price,
+          $revenue: subscription.price,
+          ...this.getUtmProperties(userSession, config)
+        };
+      }
+    };
+  }
+
+  // Media-specific helper methods
+  getMediaContent(config) {
+    const contentLibrary = config.contentLibrary || {};
+    const genres = contentLibrary.genres || ['Action', 'Comedy', 'Drama'];
+    const contentTypes = contentLibrary.contentTypes || ['Movie', 'TV Series'];
+    const languages = contentLibrary.languages || ['English'];
+    const ratings = contentLibrary.ratings || ['PG', 'PG-13', 'R'];
+
+    const contentType = contentTypes[Math.floor(Math.random() * contentTypes.length)];
+    const genre = genres[Math.floor(Math.random() * genres.length)];
+    
+    return {
+      id: `content_${Math.random().toString(36).substr(2, 8)}`,
+      title: this.generateContentTitle(genre, contentType),
+      type: contentType,
+      genre: genre,
+      duration: this.getContentDuration(contentType),
+      isPremium: Math.random() > 0.4,
+      seasonNumber: contentType === 'TV Series' ? Math.floor(Math.random() * 5) + 1 : null,
+      episodeNumber: contentType === 'TV Series' ? Math.floor(Math.random() * 20) + 1 : null,
+      rating: ratings[Math.floor(Math.random() * ratings.length)],
+      language: languages[Math.floor(Math.random() * languages.length)]
+    };
+  }
+
+  generateContentTitle(genre, contentType) {
+    const titles = {
+      'Action': ['Thunder Strike', 'Night Pursuit', 'Steel Guardian', 'Shadow Ops'],
+      'Comedy': ['Laugh Track', 'Office Antics', 'Family Chaos', 'Stand-Up Stories'],
+      'Drama': ['Broken Dreams', 'City Lights', 'The Journey', 'Silent Voices'],
+      'Horror': ['Dark Shadows', 'Midnight Terror', 'The Haunting', 'Fear Factor'],
+      'Sci-Fi': ['Future World', 'Space Odyssey', 'Time Paradox', 'Cyber Dreams']
+    };
+    
+    const genreTitles = titles[genre] || ['Content Title'];
+    const baseTitle = genreTitles[Math.floor(Math.random() * genreTitles.length)];
+    
+    if (contentType === 'TV Series') {
+      return `${baseTitle}: The Series`;
+    } else if (contentType === 'Documentary') {
+      return `${baseTitle}: A Documentary`;
+    }
+    
+    return baseTitle;
+  }
+
+  getContentDuration(contentType) {
+    const durations = {
+      'Movie': () => Math.floor(Math.random() * 3600) + 5400, // 90-150 minutes
+      'TV Series': () => Math.floor(Math.random() * 1800) + 1800, // 30-60 minutes
+      'Documentary': () => Math.floor(Math.random() * 2700) + 2700, // 45-90 minutes
+      'Music Video': () => Math.floor(Math.random() * 180) + 120, // 2-5 minutes
+      'Short Film': () => Math.floor(Math.random() * 900) + 300 // 5-20 minutes
+    };
+    
+    return durations[contentType] ? durations[contentType]() : 3600;
+  }
+
+  getVideoQuality(userSession) {
+    const qualities = ['480p', '720p', '1080p', '4K'];
+    const weights = userSession.userProperties.journey_stage === 'subscriber' ? [0.1, 0.2, 0.5, 0.2] : [0.3, 0.4, 0.3, 0.0];
+    return this.weightedRandomFromArray(qualities, weights);
+  }
+
+  getSharePlatform() {
+    const platforms = ['facebook', 'twitter', 'instagram', 'tiktok', 'whatsapp', 'email', 'copy_link'];
+    return platforms[Math.floor(Math.random() * platforms.length)];
+  }
+
+  getRecommendationType() {
+    const types = ['similar_content', 'trending', 'because_you_watched', 'new_releases', 'top_rated', 'continue_watching'];
+    return types[Math.floor(Math.random() * types.length)];
+  }
+
+  getMediaSubscription(config) {
+    const subscriptions = config.products?.filter(p => p.category === 'subscription') || [];
+    if (subscriptions.length === 0) {
+      return {
+        id: 'basic_streaming',
+        name: 'Basic Streaming',
+        tier: 'basic',
+        price: 9.99,
+        currency: 'USD',
+        billingCycle: 'monthly',
+        features: ['HD streaming', 'Multiple devices']
+      };
+    }
+    
+    const sub = subscriptions[Math.floor(Math.random() * subscriptions.length)];
+    return {
+      ...sub,
+      tier: sub.id.includes('premium') ? 'premium' : sub.id.includes('family') ? 'family' : 'basic',
+      billingCycle: Math.random() > 0.7 ? 'yearly' : 'monthly'
+    };
+  }
+
+  getContentSource() {
+    const sources = ['homepage', 'search', 'recommendation', 'trending', 'category_browse', 'watchlist'];
+    return sources[Math.floor(Math.random() * sources.length)];
+  }
+
+  getPreviousInteraction() {
+    const interactions = ['none', 'watched_trailer', 'added_to_watchlist', 'shared', 'rated'];
+    return interactions[Math.floor(Math.random() * interactions.length)];
+  }
+
+  getRecommendationSource() {
+    const sources = ['algorithm', 'trending', 'editorial', 'social', 'similar_users'];
+    return sources[Math.floor(Math.random() * sources.length)];
+  }
+
+  getShareType() {
+    const types = ['full_content', 'trailer', 'clip', 'screenshot', 'quote'];
+    return types[Math.floor(Math.random() * types.length)];
+  }
+
+  getAudienceSize() {
+    const sizes = ['small', 'medium', 'large', 'viral'];
+    const weights = [0.5, 0.3, 0.15, 0.05];
+    return this.weightedRandomFromArray(sizes, weights);
+  }
+
+  getRecommendationAlgorithm() {
+    const algorithms = ['collaborative_filtering', 'content_based', 'hybrid', 'trending', 'editorial'];
+    return algorithms[Math.floor(Math.random() * algorithms.length)];
+  }
+
+  getRandomContentId() {
+    return `content_${Math.random().toString(36).substr(2, 8)}`;
+  }
+
+  getPersonalizationFactors() {
+    const factors = ['viewing_history', 'genre_preference', 'time_of_day', 'device_type', 'social_signals'];
+    return factors.slice(0, Math.floor(Math.random() * 3) + 1).join(', ');
+  }
+
+  getPreviousTier(userSession) {
+    const tiers = ['free', 'basic', 'premium'];
+    return tiers[Math.floor(Math.random() * tiers.length)];
+  }
+
+  weightedRandomFromArray(items, weights) {
+    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (let i = 0; i < items.length; i++) {
+      random -= weights[i];
+      if (random <= 0) {
+        return items[i];
+      }
+    }
+    
+    return items[0];
   }
 
   // Reload configuration
