@@ -33,6 +33,11 @@ class ConfigurableDemoServer {
     this.amplitudeClient = getAmplitudeClient();
     this.eventGenerator = new EventGenerator();
 
+    // Apply objective-based modifications if available
+    if (this.config.demoObjectives) {
+      this.eventGenerator.applyObjectiveModifications(this.config.demoObjectives);
+    }
+
     this.connectedClients = new Set();
     this.isRunning = false;
     this.simulationInterval = null;
@@ -341,73 +346,6 @@ class ConfigurableDemoServer {
       }
     });
 
-    // Get available industries
-    this.app.get('/api/industries', (req, res) => {
-      try {
-        const industries = this.configLoader.listAvailableIndustries();
-        const industriesWithDetails = industries.map(industry => {
-          try {
-            const config = this.configLoader.loadConfig(industry);
-            return {
-              id: industry,
-              name: this.capitalizeIndustry(industry),
-              company: config.company?.name || 'Unknown Company',
-              description: config.company?.description || 'No description available',
-              scenarios: Object.keys(config.scenarios || {}).length,
-              products: config.products?.length || 0
-            };
-          } catch (error) {
-            return {
-              id: industry,
-              name: this.capitalizeIndustry(industry),
-              company: 'Unknown Company',
-              description: 'Configuration error',
-              scenarios: 0,
-              products: 0
-            };
-          }
-        });
-
-        res.json({ industries: industriesWithDetails });
-      } catch (error) {
-        res.status(500).json({ error: error.message });
-      }
-    });
-
-    // Apply setup configuration
-    this.app.post('/api/setup/apply', (req, res) => {
-      try {
-        const { industry, apiKey } = req.body;
-
-        // Update environment variable if API key provided
-        if (apiKey) {
-          process.env.AMPLITUDE_API_KEY = apiKey;
-          console.log(`🔑 Updated Amplitude API key: ${apiKey.substring(0, 8)}...`);
-
-          // Force create a new Amplitude client instance
-          this.amplitudeClient = createNewAmplitudeClient();
-        }
-
-        // Reload configuration with new industry
-        this.config = this.configLoader.reloadConfig(industry);
-        this.eventGenerator.reloadConfig();
-
-        console.log(`🎯 Demo reconfigured for ${this.config.company.name} (${industry})`);
-        console.log(`📊 Amplitude connected: ${this.amplitudeClient.isInitialized}`);
-
-        res.json({
-          success: true,
-          message: 'Configuration applied successfully',
-          company: this.config.company.name,
-          industry: this.config.company.industry,
-          amplitude_connected: this.amplitudeClient.isInitialized
-        });
-      } catch (error) {
-        console.error('Setup application failed:', error);
-        res.status(500).json({ error: error.message });
-      }
-    });
-
     // Reload configuration (useful for development)
     this.app.post('/api/config/reload', (req, res) => {
       try {
@@ -425,68 +363,18 @@ class ConfigurableDemoServer {
       }
     });
 
-    // Get demo statistics
-    this.app.get('/api/stats', (req, res) => {
-      const stats = this.amplitudeClient.getStats();
-      res.json({
-        ...stats,
-        demo_running: this.isRunning,
-        connected_clients: this.connectedClients.size,
-        company: this.config.company.name,
-        industry: this.config.company.industry,
-        active_sessions: this.activeSessions.size
-      });
-    });
-
-    // Debug Amplitude connection
-    this.app.post('/api/debug-amplitude', async (req, res) => {
-      try {
-        console.log('🔍 Debug Amplitude connection...');
-        console.log(`   Environment API Key: ${process.env.AMPLITUDE_API_KEY ? process.env.AMPLITUDE_API_KEY.substring(0, 8) + '...' : 'NOT SET'}`);
-        console.log(`   Client initialized: ${this.amplitudeClient.isInitialized}`);
-        console.log(`   Client API Key: ${this.amplitudeClient.apiKey ? this.amplitudeClient.apiKey.substring(0, 8) + '...' : 'NONE'}`);
-        
-        const testEvent = await this.amplitudeClient.track(
-          'debug_user_' + Date.now(),
-          'Debug Connection Test',
-          {
-            test_timestamp: new Date().toISOString(),
-            source: 'debug_endpoint',
-            environment_key_present: !!process.env.AMPLITUDE_API_KEY,
-            client_key_present: !!this.amplitudeClient.apiKey
-          }
-        );
-        
-        console.log(`   Debug result: ${testEvent.amplitude_status.success ? 'SUCCESS' : 'FAILED'}`);
-        
-        res.json({
-          success: true,
-          environment_api_key: process.env.AMPLITUDE_API_KEY ? process.env.AMPLITUDE_API_KEY.substring(0, 8) + '...' : null,
-          client_initialized: this.amplitudeClient.isInitialized,
-          client_api_key: this.amplitudeClient.apiKey ? this.amplitudeClient.apiKey.substring(0, 8) + '...' : null,
-          test_result: testEvent.amplitude_status
-        });
-      } catch (error) {
-        console.error('Debug amplitude error:', error);
-        res.status(500).json({
-          success: false,
-          error: error.message
-        });
-      }
-    });
-
     // Generate client-specific demo
     this.app.post('/api/generate-client-demo', async (req, res) => {
       try {
         const { ClientDemoGenerator } = require('../../scripts/create-client-demo');
         const generator = new ClientDemoGenerator();
-        
+
         const clientConfig = req.body;
         console.log(`🎯 Generating client demo for: ${clientConfig.clientName}`);
-        
+
         // Generate the demo project
         const result = await generator.generateClientDemoFromConfig(clientConfig);
-        
+
         res.json({
           success: true,
           message: 'Client demo generated successfully',
@@ -512,7 +400,7 @@ class ConfigurableDemoServer {
     this.app.get('/downloads/:projectName', (req, res) => {
       const projectName = req.params.projectName.replace('.zip', '');
       const projectPath = path.join(process.cwd(), '..', projectName);
-      
+
       if (fs.existsSync(projectPath)) {
         res.json({
           success: true,
@@ -563,28 +451,6 @@ class ConfigurableDemoServer {
     });
   }
 
-  setupWebSocket() {
-    this.io.on('connection', (socket) => {
-      console.log(`🔌 Client connected: ${socket.id}`);
-      this.connectedClients.add(socket.id);
-
-      // Send current status and configuration
-      socket.emit('demo-status', {
-        isRunning: this.isRunning,
-        amplitude_connected: this.amplitudeClient.isInitialized,
-        company: this.config.company,
-        industry: this.config.company.industry,
-        scenarios: Object.keys(this.config.scenarios),
-        stats: this.amplitudeClient.getStats()
-      });
-
-      socket.on('disconnect', () => {
-        console.log(`🔌 Client disconnected: ${socket.id}`);
-        this.connectedClients.delete(socket.id);
-      });
-    });
-  }
-
   // Start demo simulation
   startDemo(scenario = 'business') {
     if (this.isRunning) {
@@ -601,21 +467,22 @@ class ConfigurableDemoServer {
     console.log(`🎬 Starting ${this.config.company.name} demo - ${scenario} scenario`);
     this.isRunning = true;
 
-    const interval = this.config.simulation?.eventInterval || 5000;
-
     // Start generating events
-    this.simulationInterval = setInterval(async () => {
-      await this.generateRandomEvent(scenario);
-    }, interval);
+    this.demoInterval = setInterval(() => {
+      this.generateEvent(scenario);
+    }, 3000); // Generate event every 3 seconds
 
-    this.broadcast('demo-started', {
-      scenario,
-      company: this.config.company.name,
-      industry: this.config.company.industry
+    // Broadcast status update
+    this.broadcast('demo-status', {
+      isRunning: this.isRunning,
+      amplitude_connected: this.amplitudeClient.isInitialized,
+      company: this.config.company,
+      industry: this.config.company.industry,
+      scenarios: Object.keys(this.config.scenarios),
+      stats: this.amplitudeClient.getStats()
     });
   }
 
-  // Stop demo simulation
   stopDemo() {
     if (!this.isRunning) {
       console.log('⚠️ Demo not running');
@@ -625,586 +492,344 @@ class ConfigurableDemoServer {
     console.log('⏹️ Stopping demo');
     this.isRunning = false;
 
-    if (this.simulationInterval) {
-      clearInterval(this.simulationInterval);
-      this.simulationInterval = null;
+    if (this.demoInterval) {
+      clearInterval(this.demoInterval);
+      this.demoInterval = null;
     }
 
-    this.broadcast('demo-stopped', {});
-  }
-
-  // Generate realistic event based on configuration
-  async generateRandomEvent(scenario) {
-    try {
-      // Get or create a user session
-      const userSession = this.getOrCreateUserSession();
-
-      // Select event type based on scenario configuration
-      const scenarioConfig = this.config.scenarios[scenario];
-      const eventType = this.selectEventType(scenarioConfig, userSession);
-
-      // Generate event properties
-      const properties = this.eventGenerator.generateEventProperties(eventType, userSession);
-
-      // Track event
-      const event = await this.amplitudeClient.track(
-        userSession.userId,
-        eventType,
-        properties,
-        {
-          userProperties: userSession.userProperties,
-          deviceId: userSession.deviceId,
-          platform: userSession.platform
-        }
-      );
-
-      // Update user session
-      this.updateUserSession(userSession, eventType);
-
-      // Broadcast to clients
-      this.broadcast('live-event', {
-        event_type: eventType,
-        user_id: userSession.userId,
-        session_id: userSession.sessionId,
-        platform: userSession.platform,
-        company: this.config.company.name,
-        scenario: scenario,
-        properties: Object.keys(properties),
-        timestamp: new Date().toISOString(),
-        amplitude_status: event.amplitude_status
-      });
-
-    } catch (error) {
-      console.error('Error generating event:', error.message);
-    }
-  }
-
-  // Select event type based on scenario and user journey
-  selectEventType(scenarioConfig, userSession) {
-    const events = scenarioConfig.events || [];
-
-    if (events.length === 0) {
-      return 'Generic Event';
-    }
-
-    // Simple random selection for now
-    // Could be enhanced with user journey stage logic
-    return events[Math.floor(Math.random() * events.length)];
-  }
-
-  // Get or create user session with rich context
-  getOrCreateUserSession(userId = null) {
-    if (!userId) {
-      userId = this.generateUserId();
-    }
-
-    if (this.activeSessions.has(userId)) {
-      const session = this.activeSessions.get(userId);
-      
-      // Check if we should start a new session (after 30 minutes of inactivity)
-      const sessionTimeout = 30 * 60 * 1000; // 30 minutes
-      const timeSinceLastEvent = Date.now() - (session.lastEventTime || session.sessionStartTime);
-      
-      if (timeSinceLastEvent > sessionTimeout) {
-        console.log(`🔄 Starting new session for user ${userId} (timeout: ${Math.round(timeSinceLastEvent/60000)}min)`);
-        // Create new session for existing user
-        const newSessionId = Date.now();
-        session.sessionId = newSessionId;
-        session.sessionStartTime = newSessionId;
-        session.eventCount = 1;
-        session.lastEventTime = newSessionId;
-      } else {
-        session.eventCount++;
-        session.lastEventTime = Date.now();
-      }
-      
-      session.lifetimeEventCount = (session.lifetimeEventCount || session.eventCount) + 1;
-      return session;
-    }
-
-    // Create new user with realistic journey starting point
-    const userStages = this.config.userJourney?.stages || [];
-    const startingStage = userStages[0] || { name: 'visitor', displayName: 'Visitor' };
-    
-    // Generate realistic user attributes
-    const signupDate = new Date(Date.now() - Math.random() * 180 * 24 * 60 * 60 * 1000); // 0-180 days ago
-    const daysSinceSignup = Math.floor((Date.now() - signupDate.getTime()) / (24 * 60 * 60 * 1000));
-    
-    // Generate attribution data for new users
-    const attributionSources = this.config.attribution?.sources || [];
-    const attribution = attributionSources.length > 0 ? 
-      this.weightedRandom(attributionSources) : 
-      { utm_source: 'organic', utm_medium: 'organic' };
-
-    const platforms = ['web', 'mobile_app', 'desktop'];
-    const platform = platforms[Math.floor(Math.random() * platforms.length)];
-    
-    const sessionStartTime = Date.now();
-    const session = {
-      userId: userId,
-      sessionId: sessionStartTime, // Amplitude expects numeric timestamp
-      deviceId: `device_${Math.random().toString(36).substr(2, 9)}`,
-      platform: platform,
-      sessionStartTime: sessionStartTime,
-      lastEventTime: sessionStartTime,
-      eventCount: 1,
-      lifetimeEventCount: Math.floor(Math.random() * 50) + 1, // 1-50 lifetime events
-      currentJourneyStep: startingStage.name,
-      daysSinceSignup: daysSinceSignup,
-      
-      // Attribution data (first-touch)
-      attributionData: {
-        utm_source: attribution.utm_source,
-        utm_medium: attribution.utm_medium,
-        utm_campaign: attribution.utm_campaign || `${attribution.utm_source}_campaign`,
-        initial_referrer: this.getInitialReferrer(attribution),
-        acquisition_date: signupDate.toISOString().split('T')[0]
-      },
-      
-      // Rich user properties for Amplitude identify calls
-      userProperties: {
-        // Journey & lifecycle
-        journey_stage: startingStage.name,
-        lifecycle_stage: this.getLifecycleStage(daysSinceSignup),
-        days_since_signup: daysSinceSignup,
-        signup_date: signupDate.toISOString().split('T')[0],
-        
-        // Attribution (first-touch)
-        initial_utm_source: attribution.utm_source,
-        initial_utm_medium: attribution.utm_medium,
-        initial_utm_campaign: attribution.utm_campaign || `${attribution.utm_source}_campaign`,
-        initial_referrer: this.getInitialReferrer(attribution),
-        acquisition_channel: this.getAcquisitionChannel(attribution),
-        
-        // Demographics & behavior
-        user_segment: this.getUserSegment(),
-        platform_preference: platform,
-        device_type: this.getDeviceType(platform),
-        timezone: this.getTimezone(),
-        country: this.getCountry(),
-        
-        // Business context
-        company_demo: this.config.company.name,
-        industry: this.config.company.industry,
-        demo_user: true,
-        
-        // Engagement metrics
-        total_sessions: Math.floor(Math.random() * 20) + 1,
-        avg_session_duration: Math.floor(Math.random() * 600) + 120, // 2-12 minutes
-        
-        // Revenue context (for applicable industries)
-        ...(this.config.company.industry === 'ecommerce' || this.config.company.industry === 'saas' ? {
-          ltv_bucket: this.getLTVBucket({ daysSinceSignup }),
-          purchase_intent: this.getPurchaseIntent(),
-          price_sensitivity: this.getPriceSensitivity()
-        } : {})
-      }
-    };
-
-    this.activeSessions.set(userId, session);
-
-    // Set initial user properties for new users (only once)
-    this.amplitudeClient.identify(userId, session.userProperties);
-
-    // Clean up old sessions (keep more for better journey continuity)
-    if (this.activeSessions.size > 200) {
-      const oldestKey = this.activeSessions.keys().next().value;
-      this.activeSessions.delete(oldestKey);
-    }
-
-    return session;
-  }
-
-  // Enhanced user journey progression with realistic funnel logic
-  updateUserJourney(userSession, eventType) {
-    const stages = this.config.userJourney?.stages || [];
-    const currentStageIndex = stages.findIndex(s => s.name === userSession.currentJourneyStep);
-
-    // Journey progression based on event type and stage
-    let progressionChance = 0;
-    
-    if (currentStageIndex >= 0 && currentStageIndex < stages.length - 1) {
-      const currentStage = stages[currentStageIndex];
-      const nextStage = stages[currentStageIndex + 1];
-      
-      // Higher progression chance for key conversion events
-      if (this.isProgressionEvent(eventType, currentStage, nextStage)) {
-        progressionChance = currentStage.conversionRate || 0.15;
-      } else {
-        progressionChance = (currentStage.conversionRate || 0.15) * 0.3; // Lower chance for non-key events
-      }
-      
-      // Progress to next stage
-      if (Math.random() < progressionChance) {
-        console.log(`👤 User ${userSession.userId} progressed: ${currentStage.name} → ${nextStage.name}`);
-        userSession.currentJourneyStep = nextStage.name;
-        userSession.userProperties.journey_stage = nextStage.name;
-        userSession.userProperties.lifecycle_stage = this.getLifecycleStage(userSession.daysSinceSignup);
-        
-        // Update user properties in Amplitude only when they change
-        this.amplitudeClient.identify(userSession.userId, {
-          journey_stage: nextStage.name,
-          lifecycle_stage: userSession.userProperties.lifecycle_stage,
-          stage_progression_date: new Date().toISOString().split('T')[0]
-        });
-      }
-    }
-  }
-
-  // Select event based on user's journey stage and scenario
-  selectEventForUserJourney(scenarioConfig, userSession) {
-    const allEvents = scenarioConfig.events || [];
-    
-    if (allEvents.length === 0) {
-      return 'Generic Event';
-    }
-    
-    // Get stage-appropriate events
-    const currentStage = this.config.userJourney?.stages?.find(s => s.name === userSession.currentJourneyStep);
-    const stageEvents = currentStage?.events || [];
-    
-    // 70% chance to use stage-appropriate events, 30% chance for any scenario event
-    const useStageEvents = stageEvents.length > 0 && Math.random() > 0.3;
-    const eventPool = useStageEvents ? stageEvents : allEvents;
-    
-    return eventPool[Math.floor(Math.random() * eventPool.length)];
-  }
-
-  // Check if event should trigger journey progression
-  isProgressionEvent(eventType, currentStage, nextStage) {
-    const progressionEvents = {
-      'visitor': ['User Signup', 'Account Created', 'Trial Started'],
-      'trial_user': ['Subscription Purchased', 'Plan Upgraded', 'Feature Used'],
-      'active_user': ['Purchase Completed', 'Subscription Renewed', 'Referral Made'],
-      'customer': ['Upgrade Purchased', 'Add-on Purchased', 'VIP Program Joined']
-    };
-    
-    const keyEvents = progressionEvents[currentStage.name] || [];
-    return keyEvents.some(event => eventType.includes(event) || event.includes(eventType));
-  }
-
-  // Helper methods for context generation
-
-  // Removed computed metrics - let Amplitude handle segmentation and scoring
-
-  getLifecycleStage(daysSinceSignup) {
-    if (daysSinceSignup <= 1) return 'new';
-    if (daysSinceSignup <= 7) return 'activated';
-    if (daysSinceSignup <= 30) return 'engaged';
-    if (daysSinceSignup <= 90) return 'retained';
-    return 'champion';
-  }
-
-  getUserSegment() {
-    const segments = ['consumer', 'business', 'enterprise', 'startup'];
-    return segments[Math.floor(Math.random() * segments.length)];
-  }
-
-  getTimezone() {
-    const timezones = ['America/New_York', 'America/Los_Angeles', 'Europe/London', 'Asia/Tokyo'];
-    return timezones[Math.floor(Math.random() * timezones.length)];
-  }
-
-  getCountry() {
-    const countries = ['US', 'CA', 'GB', 'DE', 'FR', 'JP', 'AU'];
-    return countries[Math.floor(Math.random() * countries.length)];
-  }
-
-  getInitialReferrer(attribution) {
-    const referrers = {
-      'google': 'https://google.com/search',
-      'facebook': 'https://facebook.com',
-      'linkedin': 'https://linkedin.com',
-      'organic': 'direct'
-    };
-    return referrers[attribution.utm_source] || 'https://google.com';
-  }
-
-  getAcquisitionChannel(attribution) {
-    const channels = {
-      'google': 'paid_search',
-      'facebook': 'social_media',
-      'linkedin': 'social_media',
-      'organic': 'organic_search',
-      'email': 'email_marketing'
-    };
-    return channels[attribution.utm_source] || 'other';
-  }
-
-  getPurchaseIntent() {
-    const intents = ['low', 'medium', 'high'];
-    return intents[Math.floor(Math.random() * intents.length)];
-  }
-
-  getPriceSensitivity() {
-    const sensitivities = ['low', 'medium', 'high'];
-    return sensitivities[Math.floor(Math.random() * sensitivities.length)];
-  }
-
-  // Validate properties to prevent Amplitude errors
-  validateProperties(properties) {
-    const validated = {};
-    
-    for (const [key, value] of Object.entries(properties)) {
-      // Skip null, undefined, or function values
-      if (value === null || value === undefined || typeof value === 'function') {
-        console.warn(`⚠️ Skipping invalid property: ${key} = ${value}`);
-        continue;
-      }
-      
-      // Convert arrays to strings
-      if (Array.isArray(value)) {
-        validated[key] = value.join(', ');
-      } else {
-        validated[key] = value;
-      }
-    }
-    
-    return validated;
-  }
-
-  // Weighted random selection utility
-  weightedRandom(items) {
-    const totalWeight = items.reduce((sum, item) => sum + (item.weight || 1), 0);
-    let random = Math.random() * totalWeight;
-    
-    for (const item of items) {
-      random -= (item.weight || 1);
-      if (random <= 0) {
-        return item;
-      }
-    }
-    
-    return items[0];
-  }
-
-  // Generate unique user ID
-  generateUserId() {
-    return `user_${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  // Helper method to capitalize industry names
-  capitalizeIndustry(industry) {
-    const industryNames = {
-      'ecommerce': 'E-commerce',
-      'saas': 'SaaS',
-      'iot': 'IoT',
-      'hospitality': 'Hospitality',
-      'fintech': 'FinTech',
-      'healthcare': 'Healthcare',
-      'education': 'Education',
-      'gaming': 'Gaming'
-    };
-
-    return industryNames[industry] || industry.charAt(0).toUpperCase() + industry.slice(1);
-  }
-
-  // Start demo simulation
-  startDemo(scenario = 'business') {
-    if (this.isRunning) {
-      console.log('⚠️ Demo already running');
-      return;
-    }
-
-    // Validate scenario exists
-    if (!this.config.scenarios[scenario]) {
-      console.log(`⚠️ Unknown scenario: ${scenario}, using first available`);
-      scenario = Object.keys(this.config.scenarios)[0];
-    }
-
-    console.log(`🎬 Starting ${this.config.company.name} demo - ${scenario} scenario`);
-    this.isRunning = true;
-
-    const interval = this.config.simulation?.eventInterval || 5000;
-    
-    // Start generating events
-    this.simulationInterval = setInterval(async () => {
-      await this.generateRandomEvent(scenario);
-    }, interval);
-
-    this.broadcast('demo-started', { 
-      scenario,
-      company: this.config.company.name,
-      industry: this.config.company.industry
+    // Broadcast status update
+    this.broadcast('demo-status', {
+      isRunning: this.isRunning,
+      amplitude_connected: this.amplitudeClient.isInitialized,
+      company: this.config.company,
+      industry: this.config.company.industry,
+      scenarios: Object.keys(this.config.scenarios),
+      stats: this.amplitudeClient.getStats()
     });
   }
 
-  // Stop demo simulation
-  stopDemo() {
-    if (!this.isRunning) {
-      console.log('⚠️ Demo not running');
-      return;
-    }
-
-    console.log('⏹️ Stopping demo');
-    this.isRunning = false;
-
-    if (this.simulationInterval) {
-      clearInterval(this.simulationInterval);
-      this.simulationInterval = null;
-    }
-
-    this.broadcast('demo-stopped', {});
-  }
-
-  // Generate realistic event based on configuration with user journey logic
-  async generateRandomEvent(scenario) {
+  // Generate a single event
+  async generateEvent(scenario = 'business') {
     try {
       // Decide whether to continue existing user journey or start new one
-      const shouldContinueJourney = Math.random() > 0.3; // 70% chance to continue existing journey
-      
+      const shouldContinueJourney = Math.random() > 0.15; // 85% chance to continue existing journey for more realistic sessions
+
       let userSession;
       if (shouldContinueJourney && this.activeSessions.size > 0) {
-        // Continue existing user journey
-        const existingSessions = Array.from(this.activeSessions.values());
-        const activeSession = existingSessions[Math.floor(Math.random() * existingSessions.length)];
-        userSession = this.getOrCreateUserSession(activeSession.userId);
+        // Continue existing user journey with industry-specific session patterns
+        userSession = this.selectUserForContinuation();
       } else {
         // Start new user journey
         userSession = this.getOrCreateUserSession();
       }
-      
+
       // Select event type based on user's current journey stage and scenario
       const scenarioConfig = this.config.scenarios[scenario];
-      const eventType = this.selectEventForUserJourney(scenarioConfig, userSession);
-      
+      const eventType = this.selectEventForUserJourney(scenarioConfig, userSession, this.config.company?.industry);
+
       // Generate rich contextual properties
       const properties = this.eventGenerator.generateEventProperties(eventType, userSession);
-      
+
       // Add only contextual properties specific to this event moment
       const enrichedProperties = {
         ...properties,
-        
+
         // Current user journey context (business-specific state)
         user_journey_stage: userSession.currentJourneyStep,
-        
+
         // Attribution context (only for new users to avoid redundancy)
         ...(userSession.eventCount <= 3 && userSession.attributionData ? userSession.attributionData : {})
       };
-      
+
       // Track event with rich context including session ID
       const event = await this.amplitudeClient.track(
         userSession.userId,
         eventType,
         enrichedProperties,
         {
-          userProperties: userSession.userProperties, // Include user properties like working demo
+          sessionId: userSession.sessionId,
           deviceId: userSession.deviceId,
-          sessionId: userSession.sessionId, // Pass numeric session ID
           platform: userSession.platform
         }
       );
-      
-      // Update user session and potentially progress journey
-      this.updateUserJourney(userSession, eventType);
-      
-      // Broadcast to clients with journey context
-      this.broadcast('live-event', {
-        event_type: eventType,
-        user_id: userSession.userId,
-        session_id: userSession.sessionId,
-        platform: userSession.platform,
-        company: this.config.company.name,
-        scenario: scenario,
-        journey_stage: userSession.currentJourneyStep,
-        session_events: userSession.eventCount,
-        properties: Object.keys(enrichedProperties).slice(0, 8), // Show first 8 properties
+
+      // Update user session after event
+      this.updateUserSession(userSession, eventType);
+
+      // Broadcast event to connected clients
+      this.broadcast('new-event', {
+        eventType,
+        userId: userSession.userId,
+        properties: enrichedProperties,
         timestamp: new Date().toISOString(),
         amplitude_status: event.amplitude_status
       });
 
-      // Update stats after live event (less frequent to avoid spam)
-      if (Math.random() > 0.7) {
-        this.broadcast('demo-status', {
-          isRunning: this.isRunning,
-          amplitude_connected: this.amplitudeClient.isInitialized,
-          company: this.config.company,
-          industry: this.config.company.industry,
-          scenarios: Object.keys(this.config.scenarios),
-          stats: this.amplitudeClient.getStats(),
-          connected_clients: this.connectedClients.size
-        });
-      }
-      
     } catch (error) {
       console.error('Error generating event:', error.message);
     }
   }
 
-  // Select event type based on scenario and user journey
-  selectEventType(scenarioConfig, userSession) {
-    const events = scenarioConfig.events || [];
+  // Select user for journey continuation with industry-specific patterns
+  selectUserForContinuation() {
+    const sessions = Array.from(this.activeSessions.values());
     
-    if (events.length === 0) {
-      return 'Generic Event';
+    // Industry-specific session continuation patterns
+    const industryPatterns = {
+      'e-commerce': {
+        // E-commerce users often have shopping sessions with multiple events
+        sessionTimeout: 30 * 60 * 1000, // 30 minutes
+        continuationWeight: 0.9 // High chance to continue shopping
+      },
+      'media': {
+        // Media users often binge-watch or have longer engagement sessions
+        sessionTimeout: 60 * 60 * 1000, // 1 hour
+        continuationWeight: 0.85
+      },
+      'saas': {
+        // SaaS users have work-session patterns
+        sessionTimeout: 45 * 60 * 1000, // 45 minutes
+        continuationWeight: 0.75
+      },
+      'fintech': {
+        // FinTech users have shorter, focused sessions
+        sessionTimeout: 15 * 60 * 1000, // 15 minutes
+        continuationWeight: 0.7
+      },
+      'default': {
+        sessionTimeout: 20 * 60 * 1000, // 20 minutes
+        continuationWeight: 0.8
+      }
+    };
+
+    const pattern = industryPatterns[this.config.company?.industry] || industryPatterns.default;
+    const sessionTimeout = pattern.sessionTimeout;
+    
+    // Filter active sessions (not timed out)
+    const activeSessions = sessions.filter(session => {
+      const timeSinceLastEvent = Date.now() - (session.lastEventTime || session.sessionStartTime);
+      return timeSinceLastEvent < sessionTimeout;
+    });
+
+    if (activeSessions.length === 0) {
+      return this.getOrCreateUserSession();
     }
+
+    // Weight selection towards users with recent activity
+    const weightedSessions = activeSessions.map(session => {
+      const timeSinceLastEvent = Date.now() - (session.lastEventTime || session.sessionStartTime);
+      const recencyWeight = Math.max(0.1, 1 - (timeSinceLastEvent / sessionTimeout));
+      return { session, weight: recencyWeight * pattern.continuationWeight };
+    });
+
+    // Select based on weights
+    const totalWeight = weightedSessions.reduce((sum, item) => sum + item.weight, 0);
+    let random = Math.random() * totalWeight;
     
-    // Simple random selection for now
-    // Could be enhanced with user journey stage logic
-    return events[Math.floor(Math.random() * events.length)];
+    for (const item of weightedSessions) {
+      random -= item.weight;
+      if (random <= 0) {
+        return item.session;
+      }
+    }
+
+    // Fallback to first session
+    return weightedSessions[0].session;
   }
 
-  // Get or create user session
+  // Get or create user session with attribution
   getOrCreateUserSession(userId = null) {
     if (!userId) {
-      userId = this.generateUserId();
+      userId = `user_${Math.random().toString(36).substr(2, 9)}`;
     }
+
+    let userSession = this.activeSessions.get(userId);
     
-    if (this.activeSessions.has(userId)) {
-      const session = this.activeSessions.get(userId);
-      session.eventCount++;
-      return session;
+    if (userSession) {
+      // Check if session has timed out
+      const sessionTimeout = 20 * 60 * 1000; // 20 minutes
+      const timeSinceLastEvent = Date.now() - (userSession.lastEventTime || userSession.sessionStartTime);
+      
+      if (timeSinceLastEvent > sessionTimeout) {
+        console.log(`🔄 Starting new session for user ${userId} (timeout: ${Math.round(timeSinceLastEvent/60000)}min)`);
+        // Create new session for existing user
+        const newSessionId = Date.now();
+        userSession.sessionId = newSessionId;
+        userSession.sessionStartTime = Date.now();
+        userSession.eventCount = 0;
+        userSession.lastEventTime = null;
+        
+        // Keep user properties but reset session-specific data
+        // Don't reset journey stage - users maintain progress across sessions
+      }
+      
+      userSession.eventCount++;
+      userSession.lastEventTime = Date.now();
+      return userSession;
     }
+
+    // Create new user with attribution data
+    const attributionData = this.generateAttributionData();
     
-    // Create new user session based on configuration
-    const userStages = this.config.userJourney?.stages || [];
+    // Get user journey stages from config
+    const userStages = this.config.userJourney?.stages || [
+      { name: 'visitor', displayName: 'Visitor' },
+      { name: 'active_user', displayName: 'Active User' }
+    ];
+
+    // New users start at first stage, or random stage for demo variety
     const randomStage = userStages[Math.floor(Math.random() * userStages.length)] || {
       name: 'active_user',
       displayName: 'Active User'
     };
-    
+
     const session = {
       userId: userId,
-      sessionId: `session_${userId}_${Date.now()}`,
+      sessionId: Date.now(), // Numeric session ID as required by Amplitude
       deviceId: `device_${Math.random().toString(36).substr(2, 9)}`,
       platform: ['web', 'mobile', 'desktop'][Math.floor(Math.random() * 3)],
       sessionStartTime: Date.now(),
       eventCount: 1,
       currentJourneyStep: randomStage.name,
+      attributionData: attributionData,
       userProperties: {
         journey_stage: randomStage.name,
         company_demo: this.config.company.name,
         industry: this.config.company.industry,
-        signup_date: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString()
+        signup_date: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
+        
+        // A/B Testing Variants (Universal across all industries)
+        ab_homepage_layout: ['control', 'variant_a', 'variant_b'][Math.floor(Math.random() * 3)],
+        ab_checkout_flow: ['single_page', 'multi_step', 'express'][Math.floor(Math.random() * 3)],
+        ab_cta_button: ['blue', 'green', 'orange'][Math.floor(Math.random() * 3)],
+        ab_navigation_style: ['horizontal', 'sidebar', 'hamburger'][Math.floor(Math.random() * 3)],
+        ab_onboarding_flow: ['guided_tour', 'progressive_disclosure', 'minimal'][Math.floor(Math.random() * 3)],
+        
+        // Feature Flags (Boolean - gradual rollout simulation)  
+        ff_new_dashboard: Math.random() < 0.3, // 30% rollout
+        ff_advanced_analytics: Math.random() < 0.3,
+        ff_dark_mode: Math.random() < 0.3,
+        ...attributionData
       }
     };
-    
+
     this.activeSessions.set(userId, session);
-    
+
     // Clean up old sessions
     if (this.activeSessions.size > 100) {
       const oldestKey = this.activeSessions.keys().next().value;
       this.activeSessions.delete(oldestKey);
     }
-    
+
     return session;
+  }
+
+  // Generate realistic attribution data
+  generateAttributionData() {
+    const channels = ['organic', 'paid_search', 'social', 'email', 'direct', 'referral'];
+    const channel = channels[Math.floor(Math.random() * channels.length)];
+    
+    const attributionData = {
+      initial_utm_source: channel,
+      initial_utm_medium: channel === 'paid_search' ? 'cpc' : channel === 'social' ? 'social' : 'organic',
+      initial_referrer: channel === 'referral' ? 'partner-site.com' : null,
+      initial_landing_page: '/',
+      acquisition_date: new Date().toISOString()
+    };
+
+    // Add campaign data for paid channels
+    if (channel === 'paid_search') {
+      attributionData.initial_utm_campaign = 'brand-keywords';
+      attributionData.initial_utm_term = 'demo software';
+    } else if (channel === 'social') {
+      attributionData.initial_utm_campaign = 'social-engagement';
+      attributionData.initial_utm_content = 'post-123';
+    }
+
+    return attributionData;
+  }
+
+  // Select event type based on user journey and scenario
+  selectEventForUserJourney(scenarioConfig, userSession, industry) {
+    if (!scenarioConfig || !scenarioConfig.events) {
+      return 'page_view'; // Fallback
+    }
+
+    // Get events appropriate for user's current journey stage
+    const userStage = userSession.currentJourneyStep;
+    const stageEvents = scenarioConfig.events.filter(event => {
+      // If event has journey stage requirements, check them
+      if (event.journeyStages && event.journeyStages.length > 0) {
+        return event.journeyStages.includes(userStage);
+      }
+      // If no stage requirements, event is available to all stages
+      return true;
+    });
+
+    if (stageEvents.length === 0) {
+      // Fallback to all events if no stage-specific events found
+      return scenarioConfig.events[Math.floor(Math.random() * scenarioConfig.events.length)].name;
+    }
+
+    // Weight events by their probability (if specified)
+    const weightedEvents = stageEvents.map(event => ({
+      name: event.name,
+      weight: event.probability || 1
+    }));
+
+    // Select event based on weights
+    const totalWeight = weightedEvents.reduce((sum, event) => sum + event.weight, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (const event of weightedEvents) {
+      random -= event.weight;
+      if (random <= 0) {
+        return event.name;
+      }
+    }
+
+    // Fallback
+    return weightedEvents[0].name;
   }
 
   // Update user session after event
   updateUserSession(userSession, eventType) {
+    // Track last event for sequencing
+    userSession.lastEventType = eventType;
+    userSession.lastEventTime = Date.now();
+
     // Simple progression logic - could be enhanced
     const stages = this.config.userJourney?.stages || [];
     const currentStageIndex = stages.findIndex(s => s.name === userSession.currentJourneyStep);
-    
+
     // Chance to progress to next stage
     if (currentStageIndex >= 0 && currentStageIndex < stages.length - 1) {
       const currentStage = stages[currentStageIndex];
-      if (Math.random() < (currentStage.conversionRate || 0.1)) {
-        const nextStage = stages[currentStageIndex + 1];
+      const nextStage = stages[currentStageIndex + 1];
+      
+      // Calculate progression chance based on event type and stage
+      let progressionChance = currentStage.conversionRate || 0.1;
+      
+      // Increase chance for key conversion events
+      const conversionEvents = ['purchase', 'signup', 'subscribe', 'upgrade'];
+      if (conversionEvents.some(ce => eventType.toLowerCase().includes(ce))) {
+        progressionChance *= 3; // Triple the chance for conversion events
+      }
+
+      // Progress to next stage
+      if (Math.random() < progressionChance) {
+        console.log(`👤 User ${userSession.userId} progressed: ${currentStage.name} → ${nextStage.name}`);
         userSession.currentJourneyStep = nextStage.name;
         userSession.userProperties.journey_stage = nextStage.name;
       }
     }
+  }
+
+  // Utility method to capitalize industry names
+  capitalizeIndustry(industry) {
+    return industry.split('-').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
   }
 
   // Broadcast message to all connected clients
@@ -1238,7 +863,7 @@ class ConfigurableDemoServer {
       console.log(`🎯 Client Generator: http://localhost:${this.port}/generator`);
       console.log(`📊 Industry: ${this.config.company.industry}`);
       console.log(`🎯 Available scenarios: ${Object.keys(this.config.scenarios).join(', ')}`);
-      
+
       // Start periodic stats updates
       this.startStatsUpdates();
     });

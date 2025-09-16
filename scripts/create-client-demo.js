@@ -99,29 +99,119 @@ class ClientDemoGenerator {
   }
 
   async collectClientInfo() {
+    const { getIndustryTemplate, getAllIndustries, getRecommendedConfig } = require('../src/generators/industry-templates');
     const info = {};
     
     info.clientName = await this.ask('Client/Company name: ');
     info.projectName = info.clientName.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-amplitude-demo';
-    info.industry = await this.askChoice('Industry:', [
-      'ecommerce', 'saas', 'fintech', 'healthcare', 'education', 
-      'media', 'gaming', 'travel', 'real-estate', 'custom'
-    ]);
     
-    if (info.industry === 'custom') {
+    // Show industry options with descriptions
+    console.log('\n🏭 Available Industries:');
+    const industries = getAllIndustries();
+    industries.forEach((industry, index) => {
+      console.log(`${index + 1}. ${industry.displayName} - ${industry.description}`);
+    });
+    console.log(`${industries.length + 1}. Custom Industry`);
+    
+    const industryChoice = await this.ask(`\nSelect industry (1-${industries.length + 1}): `);
+    const industryIndex = parseInt(industryChoice) - 1;
+    
+    if (industryIndex >= 0 && industryIndex < industries.length) {
+      info.industry = industries[industryIndex].value;
+      const template = getIndustryTemplate(info.industry);
+      
+      console.log(`\n✅ Selected: ${template.displayName}`);
+      console.log(`📝 ${template.description}`);
+      
+      // Show recommended configuration
+      const recommended = getRecommendedConfig(info.industry);
+      console.log(`\n💡 Recommended configuration for ${template.displayName}:`);
+      console.log(`   Business Model: ${template.businessModels.find(bm => bm.value === recommended.businessModel)?.label}`);
+      console.log(`   Revenue Model: ${template.revenueModels.find(rm => rm.value === recommended.revenueModel)?.label}`);
+      console.log(`   Default Events: ${recommended.defaultEvents.join(', ')}`);
+      
+      const useRecommended = await this.askChoice('\nUse recommended configuration?', ['yes', 'no']);
+      
+      if (useRecommended === 'yes') {
+        info.businessModel = recommended.businessModel;
+        info.revenueModel = recommended.revenueModel;
+        info.primaryEvents = recommended.defaultEvents.join(', ');
+        console.log('✅ Using recommended configuration');
+      } else {
+        // Manual selection with industry-specific options
+        console.log('\n📋 Business Model Options:');
+        template.businessModels.forEach((model, index) => {
+          console.log(`${index + 1}. ${model.label}${model.recommended ? ' (Recommended)' : ''}`);
+        });
+        const bmChoice = await this.ask(`Select business model (1-${template.businessModels.length}): `);
+        const bmIndex = parseInt(bmChoice) - 1;
+        info.businessModel = template.businessModels[bmIndex]?.value || template.businessModels[0].value;
+        
+        console.log('\n💰 Revenue Model Options:');
+        template.revenueModels.forEach((model, index) => {
+          console.log(`${index + 1}. ${model.label}${model.recommended ? ' (Recommended)' : ''}`);
+        });
+        const rmChoice = await this.ask(`Select revenue model (1-${template.revenueModels.length}): `);
+        const rmIndex = parseInt(rmChoice) - 1;
+        info.revenueModel = template.revenueModels[rmIndex]?.value || template.revenueModels[0].value;
+        
+        console.log('\n📊 Suggested Events:');
+        console.log(`Default: ${template.defaultEvents.join(', ')}`);
+        console.log(`Additional: ${template.suggestedEvents.join(', ')}`);
+        const useDefaultEvents = await this.askChoice('Use default events?', ['yes', 'custom']);
+        
+        if (useDefaultEvents === 'yes') {
+          info.primaryEvents = template.defaultEvents.join(', ');
+        } else {
+          info.primaryEvents = await this.ask('Key events to track (comma-separated): ');
+        }
+      }
+      
+    } else if (industryIndex === industries.length) {
+      info.industry = 'custom';
       info.customIndustry = await this.ask('Custom industry description: ');
+      
+      // Fallback to generic options for custom industry
+      info.businessModel = await this.askChoice('Business model:', [
+        'b2c', 'b2b', 'marketplace', 'subscription', 'freemium', 'enterprise'
+      ]);
+      
+      info.primaryEvents = await this.ask('Key events to track (comma-separated): ');
+      info.revenueModel = await this.askChoice('Revenue model:', [
+        'subscription', 'one_time_purchase', 'advertising', 'commission', 'freemium'
+      ]);
+    } else {
+      console.log('Invalid selection, using SaaS as default');
+      info.industry = 'saas';
+      const recommended = getRecommendedConfig('saas');
+      info.businessModel = recommended.businessModel;
+      info.revenueModel = recommended.revenueModel;
+      info.primaryEvents = recommended.defaultEvents.join(', ');
     }
     
-    info.businessModel = await this.askChoice('Business model:', [
-      'b2c', 'b2b', 'marketplace', 'subscription', 'freemium', 'enterprise'
-    ]);
-    
-    info.primaryEvents = await this.ask('Key events to track (comma-separated): ');
-    info.revenueModel = await this.askChoice('Revenue model:', [
-      'subscription', 'one-time-purchase', 'advertising', 'commission', 'freemium'
-    ]);
-    
-    info.demoGoals = await this.ask('Demo objectives (what to showcase): ');
+    // Demo objectives with industry-specific suggestions
+    if (info.industry !== 'custom') {
+      const template = getIndustryTemplate(info.industry);
+      if (template) {
+        console.log('\n🎯 Common demo objectives for your industry:');
+        template.demoObjectives.forEach((objective, index) => {
+          console.log(`${index + 1}. ${objective}`);
+        });
+        const useObjective = await this.askChoice('Use a suggested objective?', ['yes', 'custom']);
+        
+        if (useObjective === 'yes') {
+          const objChoice = await this.ask(`Select objective (1-${template.demoObjectives.length}): `);
+          const objIndex = parseInt(objChoice) - 1;
+          info.demoGoals = template.demoObjectives[objIndex] || template.demoObjectives[0];
+        } else {
+          info.demoGoals = await this.ask('Demo objectives (what to showcase): ');
+        }
+      } else {
+        info.demoGoals = await this.ask('Demo objectives (what to showcase): ');
+      }
+    } else {
+      info.demoGoals = await this.ask('Demo objectives (what to showcase): ');
+    }
     info.audienceLevel = await this.askChoice('Audience technical level:', [
       'executive', 'marketing', 'product', 'technical', 'mixed'
     ]);
@@ -139,12 +229,67 @@ class ClientDemoGenerator {
       info.amplitudeEnvironment = 'demo';
     }
 
-    // Historical data backfill
-    console.log('\n📈 Historical Data Backfill (Optional)');
-    const enableBackfill = await this.askChoice('Generate historical data?', ['yes', 'no']);
-    info.enableBackfill = enableBackfill === 'yes';
+    // Demo type configuration
+    console.log('\n🎯 Demo Configuration');
+    console.log('Choose the type of demo you want to create:');
+    console.log('1. 📊 Analytics Demo (Recommended) - Historical data + real-time events');
+    console.log('2. 🎬 Live Presentation Only - Real-time events only');
+    console.log('3. 📈 Data Analysis Focus - Extensive historical data');
+    console.log('4. ⚙️ Custom Configuration - Manual setup');
     
-    if (info.enableBackfill) {
+    const demoTypeChoice = await this.ask('Select demo type (1-4): ');
+    const demoTypeIndex = parseInt(demoTypeChoice) - 1;
+    
+    const demoTypes = ['analytics_demo', 'live_presentation', 'data_analysis', 'custom'];
+    info.demoType = demoTypes[demoTypeIndex] || 'analytics_demo';
+    
+    // Configure based on demo type
+    switch (info.demoType) {
+      case 'analytics_demo':
+        console.log('✅ Analytics Demo: Perfect for client meetings with rich historical data and live events');
+        info.enableBackfill = true;
+        info.backfillDays = 60;
+        info.usersPerDay = 20;
+        info.eventsPerUser = 15;
+        info.backfillMode = 'immediate';
+        info.eventInterval = 4000;
+        info.enableRealTime = true;
+        break;
+        
+      case 'live_presentation':
+        console.log('✅ Live Presentation: Real-time events only, perfect for live demos');
+        info.enableBackfill = false;
+        info.eventInterval = 3000;
+        info.enableRealTime = true;
+        break;
+        
+      case 'data_analysis':
+        console.log('✅ Data Analysis: Extensive historical data for deep analytics');
+        info.enableBackfill = true;
+        info.backfillDays = 90;
+        info.usersPerDay = 30;
+        info.eventsPerUser = 20;
+        info.backfillMode = 'immediate';
+        info.eventInterval = 8000;
+        info.enableRealTime = true;
+        break;
+        
+      case 'custom':
+        console.log('✅ Custom Configuration: Manual setup');
+        // Historical data backfill
+        console.log('\n📈 Historical Data Configuration');
+        const enableBackfill = await this.askChoice('Generate historical data?', ['yes', 'no']);
+        info.enableBackfill = enableBackfill === 'yes';
+        break;
+        
+      default:
+        info.enableBackfill = true;
+        info.eventInterval = 4000;
+        info.enableRealTime = true;
+    }
+    
+    // Only ask detailed questions for custom configuration
+    if (info.demoType === 'custom' && info.enableBackfill) {
       if (!info.amplitudeApiKey) {
         console.log('⚠️ Warning: Historical data requires an Amplitude API key');
       }
@@ -155,9 +300,16 @@ class ClientDemoGenerator {
       info.backfillMode = await this.askChoice('When to generate:', [
         'immediate', 'on_start', 'manual'
       ]);
-      
+    }
+    
+    // Show configuration summary
+    if (info.enableBackfill) {
       const totalEvents = info.backfillDays * info.usersPerDay * info.eventsPerUser;
-      console.log(`📊 Estimated events: ${totalEvents.toLocaleString()}`);
+      console.log(`📊 Historical data: ${info.backfillDays} days, ${totalEvents.toLocaleString()} events`);
+    }
+    
+    if (info.enableRealTime !== false) {
+      console.log(`🎬 Real-time events: Every ${info.eventInterval || 4000}ms`);
     }
     
     return info;
@@ -204,6 +356,8 @@ class ClientDemoGenerator {
       'src/amplitude/amplitude-client-v2.js',
       'src/amplitude/amplitude-batch-client.js',
       'src/generators/event-generator.js',
+      'src/generators/objective-based-generation.js',
+      'src/generators/industry-templates.js',
       'src/server/config-loader.js',
       'config/demo-config.json',
       'package.json',
@@ -231,12 +385,12 @@ class ClientDemoGenerator {
 
   async generateClientConfig(clientInfo, projectPath) {
     // Load industry template if available
-    let industryTemplate = {};
+    this.industryTemplate = {};
     try {
       const industryConfigPath = path.join(__dirname, `../examples/${clientInfo.industry}-config.json`);
       if (fs.existsSync(industryConfigPath)) {
         const industryContent = fs.readFileSync(industryConfigPath, 'utf8');
-        industryTemplate = JSON.parse(industryContent);
+        this.industryTemplate = JSON.parse(industryContent);
         console.log(`📋 Loaded ${clientInfo.industry} industry template`);
       }
     } catch (error) {
@@ -286,6 +440,9 @@ class ClientDemoGenerator {
       products: this.generateProducts(clientInfo),
       attribution: this.generateAttribution(clientInfo),
       
+      // Demo objectives for event generation optimization
+      demoObjectives: clientInfo.demoGoals,
+      
       simulation: {
         eventInterval: clientInfo.eventInterval || 4000,
         userSessionDuration: 1800000,
@@ -296,23 +453,11 @@ class ClientDemoGenerator {
       // Merge industry-specific content (like contentLibrary for media)
       ...(industryTemplate.contentLibrary && { contentLibrary: industryTemplate.contentLibrary }),
       
-      // Override scenarios with industry-specific ones if available
-      ...(industryTemplate.scenarios && Object.keys(industryTemplate.scenarios).length > 0 && {
-        scenarios: {
-          ...this.generateScenarios(clientInfo),
-          ...industryTemplate.scenarios
-        }
-      }),
-      
-      // Merge attribution sources
-      ...(industryTemplate.attribution && { 
-        attribution: {
-          sources: [
-            ...this.generateAttribution(clientInfo).sources,
-            ...industryTemplate.attribution.sources
-          ]
-        }
-      })
+      // Use industry-specific configurations (methods now handle this internally)
+      scenarios: this.generateScenarios(clientInfo),
+      userJourney: this.generateUserJourney(clientInfo),
+      products: this.generateProducts(clientInfo),
+      attribution: this.generateAttribution(clientInfo)
     };
     
     const configPath = path.join(projectPath, 'config', 'client-config.json');
@@ -322,6 +467,14 @@ class ClientDemoGenerator {
   }
 
   generateScenarios(clientInfo) {
+    // Try to use industry-specific scenarios from loaded template
+    if (this.industryTemplate && this.industryTemplate.scenarios) {
+      console.log(`📋 Using ${clientInfo.industry} industry scenarios`);
+      return this.industryTemplate.scenarios;
+    }
+    
+    // Fallback to generic scenarios only if no industry template available
+    console.log(`⚠️ No industry template found, using generic scenarios`);
     const events = clientInfo.primaryEvents.split(',').map(e => e.trim());
     
     const scenarios = {
@@ -361,6 +514,14 @@ class ClientDemoGenerator {
   }
 
   generateUserJourney(clientInfo) {
+    // Try to use industry-specific user journey from loaded template
+    if (this.industryTemplate && this.industryTemplate.userJourney) {
+      console.log(`📋 Using ${clientInfo.industry} industry user journey`);
+      return this.industryTemplate.userJourney;
+    }
+    
+    // Fallback to generic stages only if no industry template available
+    console.log(`⚠️ No industry template found, using generic user journey`);
     const stages = [
       {
         name: "visitor",
@@ -400,6 +561,14 @@ class ClientDemoGenerator {
   }
 
   generateProducts(clientInfo) {
+    // Try to use industry-specific products from loaded template
+    if (this.industryTemplate && this.industryTemplate.products) {
+      console.log(`📋 Using ${clientInfo.industry} industry products`);
+      return this.industryTemplate.products;
+    }
+    
+    // Fallback to generic products
+    console.log(`⚠️ No industry template found, using generic products`);
     const products = [];
     
     if (clientInfo.revenueModel === 'subscription') {
@@ -435,6 +604,14 @@ class ClientDemoGenerator {
   }
 
   generateAttribution(clientInfo) {
+    // Try to use industry-specific attribution from loaded template
+    if (this.industryTemplate && this.industryTemplate.attribution) {
+      console.log(`📋 Using ${clientInfo.industry} industry attribution`);
+      return this.industryTemplate.attribution;
+    }
+    
+    // Fallback to generic attribution
+    console.log(`⚠️ No industry template found, using generic attribution`);
     const sources = [
       {
         utm_source: "google",
@@ -1057,6 +1234,11 @@ class ${this.toPascalCase(clientInfo.clientName)}DemoServer {
     // Initialize components
     this.eventGenerator = new EventGenerator();
     this.batchClient = new AmplitudeBatchClient();
+    
+    // Apply objective-based modifications
+    if (this.config.demoObjectives) {
+      this.eventGenerator.applyObjectiveModifications(this.config.demoObjectives);
+    }
     this.connectedClients = new Set();
     this.isRunning = false;
     this.simulationInterval = null;
@@ -1256,6 +1438,8 @@ class ${this.toPascalCase(clientInfo.clientName)}DemoServer {
         const result = await this.batchClient.generateHistoricalData(this.config, options);
         
         console.log(\`✅ Historical data generation complete for \${this.clientName}\`);
+        console.log(\`🌐 Demo Portal: http://localhost:3001\`);
+        console.log(\`🎬 Your \${this.clientName} demo is ready!\`);
         
         res.json({
           success: true,
@@ -1454,6 +1638,8 @@ class ${this.toPascalCase(clientInfo.clientName)}DemoServer {
           
           await this.batchClient.generateHistoricalData(this.config, options);
           console.log(\`✅ Historical data generation complete for \${this.clientName}\`);
+          console.log(\`🌐 Demo Portal: http://localhost:3001\`);
+          console.log(\`🎬 Your \${this.clientName} demo is ready!\`);
         } catch (error) {
           console.error(\`❌ Auto-backfill failed for \${this.clientName}:\`, error.message);
         }

@@ -73,7 +73,10 @@ class ConfigLoader {
 
     for (const key in industryConfig) {
       if (industryConfig.hasOwnProperty(key)) {
-        if (typeof industryConfig[key] === 'object' && !Array.isArray(industryConfig[key])) {
+        // Special handling for scenarios - replace entirely instead of merging
+        if (key === 'scenarios') {
+          merged[key] = industryConfig[key];
+        } else if (typeof industryConfig[key] === 'object' && !Array.isArray(industryConfig[key])) {
           // Recursively merge objects
           merged[key] = this.mergeObjects(merged[key] || {}, industryConfig[key]);
         } else {

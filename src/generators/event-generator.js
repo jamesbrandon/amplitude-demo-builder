@@ -2,6 +2,11 @@
 // Generates realistic events based on industry configuration
 
 const { getConfigLoader } = require('../server/config-loader');
+const { 
+  applyObjectiveModifications, 
+  getObjectiveWeightedEvent, 
+  addObjectiveProperties 
+} = require('./objective-based-generation');
 
 class EventGenerator {
   constructor() {
@@ -15,6 +20,14 @@ class EventGenerator {
   initializeTemplates() {
     this.config = this.configLoader.getConfig();
     this.buildEventTemplates();
+  }
+
+  // Apply objective-based modifications to configuration
+  applyObjectiveModifications(objectives) {
+    if (objectives && this.config) {
+      this.config = applyObjectiveModifications(this.config, objectives);
+      console.log('🎯 Event generation optimized for demo objectives');
+    }
   }
 
   // Build event property templates for each event type
@@ -94,6 +107,129 @@ class EventGenerator {
           is_gift: Math.random() > 0.9,
           ...this.getUtmProperties(userSession, config)
         };
+      },
+
+      // Add aliases for common event name variations
+      'Product Viewed': (userSession, config) => {
+        const product = this.getProduct(userSession, config);
+        return {
+          product_id: product.id,
+          product_name: product.name,
+          product_category: product.category,
+          price: product.price,
+          currency: product.currency || 'USD',
+          brand: product.brand || config.company?.name,
+          in_stock: Math.random() > 0.1, // 90% in stock
+          view_duration: Math.floor(Math.random() * 300) + 30, // 30-330 seconds
+          images_viewed: Math.floor(Math.random() * 8) + 1,
+          zoom_used: Math.random() > 0.6,
+          reviews_viewed: Math.random() > 0.7,
+          size_guide_viewed: Math.random() > 0.3,
+          related_products_viewed: Math.floor(Math.random() * 5),
+          previous_view: userSession.lastEventType === 'Product Viewed'
+        };
+      },
+
+      'Purchase Completed': (userSession, config) => {
+        // Alias for Product Purchased with more comprehensive properties
+        const product = this.getProduct(userSession, config);
+        const quantity = Math.floor(Math.random() * 3) + 1;
+        const subtotal = product.price * quantity;
+        const tax = subtotal * 0.08; // 8% tax
+        const shipping = subtotal > 50 ? 0 : 9.99; // Free shipping over $50
+        const discount = Math.random() > 0.8 ? subtotal * 0.15 : 0;
+        const total = subtotal + tax + shipping - discount;
+
+        return {
+          order_id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+          product_id: product.id,
+          product_name: product.name,
+          product_category: product.category,
+          quantity: quantity,
+          subtotal: subtotal,
+          tax_amount: tax,
+          shipping_amount: shipping,
+          discount_amount: discount,
+          total_amount: total,
+          currency: product.currency || 'USD',
+          revenue: total,
+          $revenue: total, // Amplitude special property
+          payment_method: this.getPaymentMethod(),
+          shipping_method: this.getShippingMethod(),
+          billing_country: this.getCountry(),
+          shipping_country: this.getCountry(),
+          is_first_purchase: userSession.userProperties.journey_stage === 'prospect',
+          coupon_code: discount > 0 ? this.getCouponCode() : null,
+          ...this.getUtmProperties(userSession, config)
+        };
+      },
+
+      'Content Viewed': (userSession, config) => {
+        // Generate content data inline since we can't access 'this' in arrow functions
+        const contentTypes = ['movie', 'episode', 'documentary', 'live_stream'];
+        const categories = ['action', 'comedy', 'drama', 'sci-fi', 'documentary', 'news', 'sports'];
+        const titles = [
+          'The Great Adventure', 'Mystery of the Lost City', 'Comedy Central Special',
+          'Breaking News Update', 'Sports Highlights', 'Nature Documentary',
+          'Tech Innovation Series', 'Cooking Masterclass', 'Travel Diaries'
+        ];
+        
+        const content = {
+          id: `content_${Math.random().toString(36).substr(2, 8)}`,
+          title: titles[Math.floor(Math.random() * titles.length)],
+          type: contentTypes[Math.floor(Math.random() * contentTypes.length)],
+          category: categories[Math.floor(Math.random() * categories.length)],
+          duration: Math.floor(Math.random() * 7200) + 300 // 5 minutes to 2 hours
+        };
+        
+        return {
+          content_id: content.id,
+          content_title: content.title,
+          content_type: content.type,
+          content_category: content.category,
+          content_duration: content.duration,
+          view_duration: Math.floor(Math.random() * content.duration * 0.8), // 0-80% watched
+          completion_rate: Math.round((Math.random() * 0.8 + 0.2) * 100) / 100, // 20-100%
+          quality: ['240p', '360p', '480p', '720p', '1080p', '4K'][Math.floor(Math.random() * 6)],
+          device_type: userSession.platform,
+          is_premium_content: Math.random() > 0.7,
+          season_number: content.type === 'episode' ? Math.floor(Math.random() * 5) + 1 : null,
+          episode_number: content.type === 'episode' ? Math.floor(Math.random() * 20) + 1 : null
+        };
+      },
+
+      'Video Played': (userSession, config) => {
+        // Generate video data inline
+        const contentTypes = ['movie', 'episode', 'documentary', 'live_stream'];
+        const categories = ['action', 'comedy', 'drama', 'sci-fi', 'documentary', 'news', 'sports'];
+        const titles = [
+          'The Great Adventure', 'Mystery of the Lost City', 'Comedy Central Special',
+          'Breaking News Update', 'Sports Highlights', 'Nature Documentary'
+        ];
+        
+        const content = {
+          id: `video_${Math.random().toString(36).substr(2, 8)}`,
+          title: titles[Math.floor(Math.random() * titles.length)],
+          category: categories[Math.floor(Math.random() * categories.length)],
+          duration: Math.floor(Math.random() * 7200) + 300
+        };
+        
+        const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+        
+        return {
+          video_id: content.id,
+          video_title: content.title,
+          video_category: content.category,
+          video_duration: content.duration,
+          playback_position: Math.floor(Math.random() * content.duration * 0.3), // Start position
+          quality: ['240p', '360p', '480p', '720p', '1080p', '4K'][Math.floor(Math.random() * 6)],
+          autoplay: Math.random() > 0.6,
+          fullscreen: Math.random() > 0.4,
+          volume_level: Math.floor(Math.random() * 100),
+          subtitles_enabled: Math.random() > 0.7,
+          playback_speed: speeds[Math.floor(Math.random() * speeds.length)],
+          is_live: Math.random() > 0.9
+        };
       }
     };
 
@@ -152,7 +288,10 @@ class EventGenerator {
         shipping_method: this.getShippingMethod(),
         payment_method: this.getPaymentMethod(),
         coupon_code: Math.random() > 0.8 ? this.getCouponCode() : null,
-        is_guest_checkout: Math.random() > 0.6
+        is_guest_checkout: Math.random() > 0.6,
+        checkout_step: 1,
+        cart_abandonment_risk: Math.random() > 0.7 ? 'high' : 'low',
+        estimated_shipping: Math.floor(Math.random() * 20) + 5.99
       }),
 
       'Search Performed': (userSession, config) => ({
@@ -328,18 +467,311 @@ class EventGenerator {
 
   // Generate event properties for a specific event type
   generateEventProperties(eventType, userSession) {
-    const template = this.eventTemplates.get(eventType);
+    let template = this.eventTemplates.get(eventType);
     
+    // If no exact match, try to find a similar template
+    if (!template) {
+      template = this.findSimilarTemplate(eventType);
+    }
+    
+    let properties;
     if (template) {
-      return template(userSession, this.config);
+      try {
+        properties = template(userSession, this.config);
+      } catch (error) {
+        console.warn(`Error generating properties for ${eventType}:`, error.message);
+        properties = this.generateFallbackProperties(eventType, userSession);
+      }
+    } else {
+      properties = this.generateFallbackProperties(eventType, userSession);
     }
 
-    // Fallback for unknown event types (avoid reserved properties)
-    return {
+    // Apply objective-based property enhancements
+    if (this.config.objectiveProperties) {
+      properties = addObjectiveProperties(eventType, properties, this.config.objectiveProperties);
+    }
+
+    // Add common contextual properties
+    properties = {
+      ...properties,
+      timestamp: new Date().toISOString(),
+      session_event_count: userSession.eventCount,
+      user_journey_stage: userSession.currentJourneyStep,
+      days_since_signup: userSession.daysSinceSignup || 0
+    };
+
+    // Add A/B testing context to relevant events
+    properties = this.addABTestingContext(eventType, properties, userSession);
+
+    return properties;
+  }
+
+  // Find a similar template for event name variations
+  findSimilarTemplate(eventType) {
+    const eventLower = eventType.toLowerCase();
+    
+    // Common event name mappings
+    const eventMappings = {
+      'page view': 'Page Viewed',
+      'pageview': 'Page Viewed',
+      'page_view': 'Page Viewed',
+      'product view': 'Product Viewed',
+      'product_view': 'Product Viewed',
+      'item_view': 'Product Viewed',
+      'view_item': 'Product Viewed',
+      'purchase': 'Purchase Completed',
+      'buy': 'Purchase Completed',
+      'order': 'Purchase Completed',
+      'checkout': 'Checkout Started',
+      'begin_checkout': 'Checkout Started',
+      'add_to_cart': 'Product Added to Cart',
+      'cart_add': 'Product Added to Cart',
+      'signup': 'User Signup',
+      'register': 'User Signup',
+      'sign_up': 'User Signup',
+      'login': 'User Login',
+      'sign_in': 'User Login',
+      'video_play': 'Video Played',
+      'play_video': 'Video Played',
+      'content_view': 'Content Viewed',
+      'view_content': 'Content Viewed'
+    };
+
+    // Check for direct mapping
+    if (eventMappings[eventLower]) {
+      return this.eventTemplates.get(eventMappings[eventLower]);
+    }
+
+    // Check for partial matches
+    for (const [key, template] of this.eventTemplates) {
+      const keyLower = key.toLowerCase();
+      if (eventLower.includes(keyLower.split(' ')[0]) || keyLower.includes(eventLower.split(' ')[0])) {
+        return template;
+      }
+    }
+
+    return null;
+  }
+
+  // Generate fallback properties for unknown event types
+  generateFallbackProperties(eventType, userSession) {
+    const baseProperties = {
       event_category: this.getEventCategory(eventType),
       user_stage: userSession.userProperties.journey_stage,
       platform: userSession.platform
     };
+
+    // Add industry-specific fallback properties
+    const industry = this.config.company?.industry;
+    
+    if (industry === 'ecommerce') {
+      return {
+        ...baseProperties,
+        page_type: this.getPageType(),
+        referrer_type: this.getReferrerType(),
+        device_category: this.getDeviceCategory(userSession.platform)
+      };
+    } else if (industry === 'saas') {
+      return {
+        ...baseProperties,
+        feature_area: this.getFeatureArea(),
+        user_role: this.getUserRole(),
+        subscription_status: this.getSubscriptionStatus(userSession)
+      };
+    } else if (industry === 'media') {
+      return {
+        ...baseProperties,
+        content_category: this.getContentCategory(),
+        viewing_context: this.getViewingContext(),
+        device_type: this.getDeviceType()
+      };
+    }
+
+    return baseProperties;
+  }
+
+  // Helper methods for fallback properties
+  getEventCategory(eventType) {
+    const eventLower = eventType.toLowerCase();
+    
+    if (eventLower.includes('view') || eventLower.includes('page')) return 'engagement';
+    if (eventLower.includes('click') || eventLower.includes('tap')) return 'interaction';
+    if (eventLower.includes('purchase') || eventLower.includes('buy') || eventLower.includes('order')) return 'conversion';
+    if (eventLower.includes('signup') || eventLower.includes('register') || eventLower.includes('login')) return 'authentication';
+    if (eventLower.includes('search') || eventLower.includes('filter')) return 'discovery';
+    if (eventLower.includes('share') || eventLower.includes('like') || eventLower.includes('comment')) return 'social';
+    
+    return 'general';
+  }
+
+  getPageType() {
+    const types = ['home', 'category', 'product', 'cart', 'checkout', 'account', 'search'];
+    return types[Math.floor(Math.random() * types.length)];
+  }
+
+  getReferrerType() {
+    const types = ['direct', 'search', 'social', 'email', 'referral', 'paid'];
+    return types[Math.floor(Math.random() * types.length)];
+  }
+
+  getDeviceCategory(platform) {
+    if (platform === 'mobile_app') return 'mobile';
+    if (platform === 'desktop') return 'desktop';
+    return 'tablet';
+  }
+
+  getFeatureArea() {
+    const areas = ['dashboard', 'analytics', 'settings', 'billing', 'team', 'integrations'];
+    return areas[Math.floor(Math.random() * areas.length)];
+  }
+
+  getUserRole() {
+    const roles = ['admin', 'user', 'viewer', 'editor'];
+    return roles[Math.floor(Math.random() * roles.length)];
+  }
+
+  getSubscriptionStatus(userSession) {
+    const stage = userSession.userProperties.journey_stage;
+    if (stage === 'customer') return 'active';
+    if (stage === 'trial_user') return 'trial';
+    return 'free';
+  }
+
+  getContentCategory() {
+    const categories = ['entertainment', 'news', 'sports', 'education', 'music'];
+    return categories[Math.floor(Math.random() * categories.length)];
+  }
+
+  getViewingContext() {
+    const contexts = ['browse', 'search', 'recommendation', 'continue_watching'];
+    return contexts[Math.floor(Math.random() * contexts.length)];
+  }
+
+  getDeviceType() {
+    const types = ['smart_tv', 'mobile', 'tablet', 'desktop', 'gaming_console'];
+    return types[Math.floor(Math.random() * types.length)];
+  }
+
+  // Add A/B testing context to events based on user variants
+  addABTestingContext(eventType, properties, userSession) {
+    if (!userSession.userProperties) return properties;
+
+    const eventLower = eventType.toLowerCase();
+    const userProps = userSession.userProperties;
+
+    // Add relevant A/B test variants based on event type
+    if (eventLower.includes('page') || eventLower.includes('view')) {
+      // Page/view events get layout and navigation variants
+      if (userProps.ab_homepage_layout) {
+        properties.page_layout_variant = userProps.ab_homepage_layout;
+      }
+      if (userProps.ab_navigation_style) {
+        properties.navigation_variant = userProps.ab_navigation_style;
+      }
+    }
+
+    if (eventLower.includes('checkout') || eventLower.includes('purchase') || eventLower.includes('cart')) {
+      // Checkout/purchase events get checkout flow variants
+      if (userProps.ab_checkout_flow) {
+        properties.checkout_variant = userProps.ab_checkout_flow;
+      }
+      if (userProps.ab_cta_button) {
+        properties.button_variant = userProps.ab_cta_button;
+      }
+    }
+
+    if (eventLower.includes('signup') || eventLower.includes('onboard')) {
+      // Signup/onboarding events get onboarding variants
+      if (userProps.ab_onboarding_flow) {
+        properties.onboarding_variant = userProps.ab_onboarding_flow;
+      }
+    }
+
+    if (eventLower.includes('recommendation') || eventLower.includes('suggest')) {
+      // Recommendation events get algorithm variants
+      if (userProps.ab_recommendation_algorithm) {
+        properties.recommendation_variant = userProps.ab_recommendation_algorithm;
+      }
+    }
+
+    // Add feature flag context for relevant events
+    if (eventLower.includes('dashboard') && userProps.ff_new_dashboard) {
+      properties.new_dashboard_enabled = userProps.ff_new_dashboard;
+    }
+
+    if (eventLower.includes('analytics') && userProps.ff_advanced_analytics) {
+      properties.advanced_analytics_enabled = userProps.ff_advanced_analytics;
+    }
+
+    // Add experiment exposure tracking (important for A/B testing analysis)
+    const activeExperiments = [];
+    Object.keys(userProps).forEach(key => {
+      if (key.startsWith('ab_')) {
+        const experimentName = key.replace('ab_', '');
+        activeExperiments.push({
+          experiment: experimentName,
+          variant: userProps[key]
+        });
+      }
+    });
+
+    if (activeExperiments.length > 0) {
+      properties.active_experiments = activeExperiments.length;
+      // Add the most relevant experiment for this event type
+      const relevantExperiment = this.getMostRelevantExperiment(eventType, activeExperiments);
+      if (relevantExperiment) {
+        properties.primary_experiment = relevantExperiment.experiment;
+        properties.primary_variant = relevantExperiment.variant;
+      }
+    }
+
+    return properties;
+  }
+
+  // Get the most relevant A/B test experiment for the current event
+  getMostRelevantExperiment(eventType, experiments) {
+    const eventLower = eventType.toLowerCase();
+    
+    // Map event types to relevant experiments
+    const relevanceMap = {
+      'page': ['homepage_layout', 'navigation_style'],
+      'view': ['homepage_layout', 'navigation_style'],
+      'checkout': ['checkout_flow', 'cta_button'],
+      'purchase': ['checkout_flow', 'cta_button', 'pricing_display'],
+      'cart': ['checkout_flow', 'cta_button'],
+      'signup': ['onboarding_flow', 'cta_button'],
+      'onboard': ['onboarding_flow'],
+      'recommendation': ['recommendation_algorithm'],
+      'email': ['email_frequency']
+    };
+
+    // Find the most relevant experiment
+    for (const [eventKeyword, relevantExperiments] of Object.entries(relevanceMap)) {
+      if (eventLower.includes(eventKeyword)) {
+        for (const expName of relevantExperiments) {
+          const experiment = experiments.find(exp => exp.experiment === expName);
+          if (experiment) {
+            return experiment;
+          }
+        }
+      }
+    }
+
+    // Return first experiment if no specific relevance found
+    return experiments[0] || null;
+  }
+
+  // Select event type with objective-based weighting
+  selectEventType(events, userSession) {
+    if (!events || events.length === 0) return null;
+    
+    // Use objective-based weighting if available
+    if (this.config.objectiveEventWeights) {
+      return getObjectiveWeightedEvent(events, this.config.objectiveEventWeights);
+    }
+    
+    // Fallback to random selection
+    return events[Math.floor(Math.random() * events.length)];
   }
 
   // Helper methods for generating realistic data
@@ -482,6 +914,90 @@ class EventGenerator {
     }
     
     return items[0]; // Fallback
+  }
+
+  // Additional helper methods for new event properties
+  getContent(userSession, config) {
+    const contentTypes = ['movie', 'episode', 'documentary', 'live_stream'];
+    const categories = ['action', 'comedy', 'drama', 'sci-fi', 'documentary', 'news', 'sports'];
+    
+    return {
+      id: `content_${Math.random().toString(36).substr(2, 8)}`,
+      title: this.getContentTitle(),
+      type: contentTypes[Math.floor(Math.random() * contentTypes.length)],
+      category: categories[Math.floor(Math.random() * categories.length)],
+      duration: Math.floor(Math.random() * 7200) + 300 // 5 minutes to 2 hours
+    };
+  }
+
+  getContentTitle() {
+    const titles = [
+      'The Great Adventure', 'Mystery of the Lost City', 'Comedy Central Special',
+      'Breaking News Update', 'Sports Highlights', 'Nature Documentary',
+      'Tech Innovation Series', 'Cooking Masterclass', 'Travel Diaries'
+    ];
+    return titles[Math.floor(Math.random() * titles.length)];
+  }
+
+  getVideoQuality() {
+    const qualities = ['240p', '360p', '480p', '720p', '1080p', '4K'];
+    const weights = [0.05, 0.1, 0.15, 0.3, 0.35, 0.05]; // Most common: 720p, 1080p
+    
+    let random = Math.random();
+    for (let i = 0; i < qualities.length; i++) {
+      random -= weights[i];
+      if (random <= 0) {
+        return qualities[i];
+      }
+    }
+    return '1080p';
+  }
+
+  getPlaybackSpeed() {
+    const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+    const weights = [0.05, 0.1, 0.7, 0.1, 0.04, 0.01]; // Most common: 1.0x
+    
+    let random = Math.random();
+    for (let i = 0; i < speeds.length; i++) {
+      random -= weights[i];
+      if (random <= 0) {
+        return speeds[i];
+      }
+    }
+    return 1.0;
+  }
+
+  getShippingMethod() {
+    const methods = ['standard', 'express', 'overnight', 'pickup'];
+    const weights = [0.6, 0.25, 0.1, 0.05];
+    
+    let random = Math.random();
+    for (let i = 0; i < methods.length; i++) {
+      random -= weights[i];
+      if (random <= 0) {
+        return methods[i];
+      }
+    }
+    return 'standard';
+  }
+
+  getCouponCode() {
+    const codes = ['SAVE10', 'WELCOME20', 'FREESHIP', 'NEWUSER', 'HOLIDAY25'];
+    return codes[Math.floor(Math.random() * codes.length)];
+  }
+
+  getCountry() {
+    const countries = ['US', 'CA', 'GB', 'DE', 'FR', 'AU', 'JP'];
+    const weights = [0.4, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]; // US-heavy
+    
+    let random = Math.random();
+    for (let i = 0; i < countries.length; i++) {
+      random -= weights[i];
+      if (random <= 0) {
+        return countries[i];
+      }
+    }
+    return 'US';
   }
 
   // Hospitality specific templates

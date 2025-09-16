@@ -71,6 +71,8 @@ class AmplitudeBatchClient {
     }
 
     console.log(`✅ Historical data generation complete!`);
+    console.log(`🌐 Demo Portal: http://localhost:3001`);
+    console.log(`🎬 Your demo is ready to use!`);
     return {
       totalEvents: daysBack * usersPerDay * eventsPerUser,
       daysGenerated: daysBack,

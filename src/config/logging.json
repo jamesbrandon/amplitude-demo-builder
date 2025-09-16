@@ -1,0 +1,49 @@
+{
+  "logLevel": "info",
+  "enableConsole": true,
+  "enableFile": false,
+  "logFile": "logs/demo-server.log",
+  "maxFileSize": "10MB",
+  "maxFiles": 5,
+  "datePattern": "YYYY-MM-DD",
+  "format": {
+    "timestamp": true,
+    "level": true,
+    "emoji": true,
+    "colors": true,
+    "metadata": true
+  },
+  "categories": {
+    "server": {
+      "level": "info",
+      "enableFile": true
+    },
+    "amplitude": {
+      "level": "debug",
+      "enableFile": true
+    },
+    "events": {
+      "level": "info",
+      "enableFile": false
+    },
+    "websocket": {
+      "level": "debug",
+      "enableFile": false
+    },
+    "config": {
+      "level": "warn",
+      "enableFile": true
+    }
+  },
+  "filters": {
+    "excludePatterns": [
+      "health check",
+      "static file"
+    ],
+    "sensitiveFields": [
+      "apiKey",
+      "password",
+      "token"
+    ]
+  }
+}

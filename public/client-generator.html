@@ -241,19 +241,20 @@
                         </div>
                         <div class="form-group">
                             <label for="industry">Industry *</label>
-                            <select id="industry" name="industry" required>
+                            <select id="industry" name="industry" required onchange="updateIndustryDefaults()">
                                 <option value="">Select Industry</option>
-                                <option value="ecommerce">E-commerce</option>
-                                <option value="saas">SaaS</option>
-                                <option value="fintech">FinTech</option>
-                                <option value="healthcare">Healthcare</option>
-                                <option value="education">Education</option>
-                                <option value="media">Media & Entertainment</option>
-                                <option value="gaming">Gaming</option>
-                                <option value="travel">Travel & Hospitality</option>
-                                <option value="real-estate">Real Estate</option>
-                                <option value="custom">Custom</option>
+                                <option value="ecommerce">🛒 E-commerce & Retail</option>
+                                <option value="media">🎬 Media & Entertainment (Netflix, Spotify)</option>
+                                <option value="saas">💼 SaaS & Software</option>
+                                <option value="fintech">💰 FinTech & Financial Services</option>
+                                <option value="hospitality">🏨 Travel & Hospitality</option>
+                                <option value="iot">🏠 IoT & Smart Devices</option>
+                                <option value="healthcare">🏥 Healthcare & Wellness</option>
+                                <option value="education">📚 Education & E-Learning</option>
+                                <option value="gaming">🎮 Gaming & Entertainment</option>
+                                <option value="custom">⚙️ Custom Industry</option>
                             </select>
+                            <small id="industryDescription" style="color: #6b7280; font-size: 14px; margin-top: 5px; display: block;"></small>
                         </div>
                     </div>
 
@@ -261,25 +262,18 @@
                         <div class="form-group">
                             <label for="businessModel">Business Model *</label>
                             <select id="businessModel" name="businessModel" required>
-                                <option value="">Select Model</option>
-                                <option value="b2c">B2C</option>
-                                <option value="b2b">B2B</option>
-                                <option value="marketplace">Marketplace</option>
-                                <option value="subscription">Subscription</option>
-                                <option value="freemium">Freemium</option>
-                                <option value="enterprise">Enterprise</option>
+                                <option value="">Select Business Model</option>
+                                <!-- Options will be populated by JavaScript based on industry -->
                             </select>
+                            <small id="businessModelHelp" style="color: #6b7280; font-size: 13px; margin-top: 3px; display: block;"></small>
                         </div>
                         <div class="form-group">
                             <label for="revenueModel">Revenue Model *</label>
                             <select id="revenueModel" name="revenueModel" required>
                                 <option value="">Select Revenue Model</option>
-                                <option value="subscription">Subscription</option>
-                                <option value="one-time-purchase">One-time Purchase</option>
-                                <option value="advertising">Advertising</option>
-                                <option value="commission">Commission</option>
-                                <option value="freemium">Freemium</option>
+                                <!-- Options will be populated by JavaScript based on industry -->
                             </select>
+                            <small id="revenueModelHelp" style="color: #6b7280; font-size: 13px; margin-top: 3px; display: block;"></small>
                         </div>
                     </div>
                 </div>
@@ -322,6 +316,12 @@
                         <label for="demoGoals">Demo Objectives *</label>
                         <textarea id="demoGoals" name="demoGoals" required 
                                   placeholder="What do you want to showcase? e.g., User journey analysis, Revenue attribution, Feature adoption tracking"></textarea>
+                        
+                        <!-- Industry-specific suggestions -->
+                        <div id="objectiveSuggestions" style="display: none; margin-top: 8px;">
+                            <small style="color: #6b7280; font-size: 13px; margin-bottom: 5px; display: block;">💡 Common objectives for your industry:</small>
+                            <div id="objectivesList" style="display: flex; flex-wrap: wrap; gap: 5px;"></div>
+                        </div>
                     </div>
 
                     <div class="form-row">
@@ -352,7 +352,17 @@
                 <div class="form-section">
                     <h3>Key Events to Track</h3>
                     <div class="event-builder">
-                        <p style="margin-bottom: 15px; color: #6b7280;">Define the most important events for this client's demo:</p>
+                        <p style="margin-bottom: 15px; color: #6b7280;">
+                            <span id="eventsDescription">Define the most important events for this client's demo:</span>
+                        </p>
+                        
+                        <!-- Suggested Events (populated by industry) -->
+                        <div id="suggestedEvents" style="display: none; margin-bottom: 20px; padding: 15px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
+                            <h4 style="margin: 0 0 10px 0; color: #1e40af; font-size: 14px;">💡 Suggested Events for Your Industry:</h4>
+                            <div id="suggestedEventsList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                            <button type="button" onclick="useAllSuggested()" style="margin-top: 10px; padding: 6px 12px; background: #2563eb; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">Use All Suggested</button>
+                        </div>
+
                         <div id="eventsList">
                             <div class="event-item">
                                 <input type="text" placeholder="Event name (e.g., User Signup)" value="User Signup">
@@ -367,18 +377,38 @@
                     </div>
                 </div>
 
-                <!-- Historical Data Backfill -->
+                <!-- Demo Configuration Presets -->
                 <div class="form-section">
-                    <h3>Historical Data Backfill</h3>
+                    <h3>Demo Type & Data Configuration</h3>
+                    
+                    <!-- Demo Type Presets -->
                     <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="enableBackfill" name="enableBackfill" onchange="toggleBackfillOptions()">
-                            Generate historical data for more realistic demos
-                        </label>
-                        <small style="color: #6b7280; font-size: 14px; margin-top: 5px; display: block;">
-                            📈 Creates 2 weeks to 2 months of realistic user journeys and events using Amplitude's Batch API
-                        </small>
+                        <label for="demoType">Demo Configuration *</label>
+                        <select id="demoType" name="demoType" required onchange="updateDemoTypeSettings()">
+                            <option value="">Select Demo Type</option>
+                            <option value="analytics_demo" selected>📊 Analytics Demo (Recommended)</option>
+                            <option value="live_presentation">🎬 Live Presentation Only</option>
+                            <option value="data_analysis">📈 Data Analysis Focus</option>
+                            <option value="custom">⚙️ Custom Configuration</option>
+                        </select>
+                        <div id="demoTypeDescription" style="margin-top: 8px; padding: 12px; background: #f0f9ff; border-radius: 6px; border-left: 4px solid #2563eb;">
+                            <strong>📊 Analytics Demo (Recommended)</strong><br>
+                            <small style="color: #1e40af;">Perfect for client meetings! Includes months of realistic historical data for credible dashboards, plus live events during your presentation. Shows trends, user progression, and real-time activity.</small>
+                        </div>
                     </div>
+
+                    <!-- Historical Data Configuration -->
+                    <div id="historicalDataSection">
+                        <h4 style="margin: 20px 0 10px 0; color: #374151;">Historical Data Settings</h4>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="enableBackfill" name="enableBackfill" checked onchange="toggleBackfillOptions()">
+                                Generate historical data for realistic analytics
+                            </label>
+                            <small style="color: #6b7280; font-size: 14px; margin-top: 5px; display: block;">
+                                📈 Creates months of realistic user journeys and events using Amplitude's Batch API. Essential for credible demo dashboards and trend analysis.
+                            </small>
+                        </div>
 
                     <div id="backfillOptions" style="display: none; margin-top: 15px; padding: 15px; background: #f9fafb; border-radius: 6px;">
                         <div class="form-row">
@@ -414,6 +444,44 @@
                             <small style="color: #6b7280; font-size: 13px;">
                                 ⚠️ <strong>Note:</strong> Historical data generation requires a valid Amplitude API key and uses the Batch API. 
                                 Estimated events: <span id="estimatedEvents">5,400</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-Time Demo Configuration -->
+                <div class="form-section" id="realTimeSection">
+                    <h3>Real-Time Demo Settings</h3>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enableRealTime" name="enableRealTime" checked>
+                            Enable live event generation during demos
+                        </label>
+                        <small style="color: #6b7280; font-size: 14px; margin-top: 5px; display: block;">
+                            🎬 Generates events in real-time during your presentation. Perfect for showing live user activity and immediate event tracking.
+                        </small>
+                    </div>
+                    
+                    <div id="realTimeOptions" style="margin-top: 15px; padding: 15px; background: #f9fafb; border-radius: 6px;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="eventInterval">Event Generation Interval (ms)</label>
+                                <select id="eventInterval" name="eventInterval">
+                                    <option value="2000">Very Fast (2 seconds)</option>
+                                    <option value="3000">Fast (3 seconds)</option>
+                                    <option value="4000" selected>Normal (4 seconds)</option>
+                                    <option value="6000">Slow (6 seconds)</option>
+                                    <option value="8000">Very Slow (8 seconds)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="maxConcurrentUsers">Max Concurrent Users</label>
+                                <input type="number" id="maxConcurrentUsers" name="maxConcurrentUsers" value="10" min="1" max="50">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <small style="color: #6b7280; font-size: 13px;">
+                                💡 <strong>Tip:</strong> Use faster intervals for shorter demos, slower for detailed analysis presentations.
                             </small>
                         </div>
                     </div>
@@ -463,6 +531,475 @@
 
     <script>
         let eventCounter = 2;
+
+        // Industry-specific templates and configurations
+        const INDUSTRY_TEMPLATES = {
+            'ecommerce': {
+                displayName: 'E-commerce & Retail',
+                description: 'Online stores, marketplaces, and retail platforms',
+                businessModels: [
+                    { value: 'b2c', label: 'B2C (Direct to Consumer)', recommended: true },
+                    { value: 'marketplace', label: 'Marketplace (Multi-vendor)' },
+                    { value: 'b2b', label: 'B2B (Wholesale/Trade)' }
+                ],
+                revenueModels: [
+                    { value: 'product_sales', label: 'Product Sales', recommended: true },
+                    { value: 'commission', label: 'Commission (Marketplace)' },
+                    { value: 'subscription', label: 'Subscription Box' },
+                    { value: 'advertising', label: 'Advertising Revenue' }
+                ],
+                defaultEvents: ['Product Viewed', 'Product Added to Cart', 'Checkout Started', 'Purchase Completed', 'Product Reviewed'],
+                suggestedEvents: ['Search Performed', 'Category Browsed', 'Wishlist Added', 'Promotion Clicked', 'Email Opened', 'Account Created', 'Recommendation Clicked'],
+                demoObjectives: ['Product discovery and conversion funnel analysis', 'Shopping cart abandonment insights', 'Customer lifetime value tracking', 'Marketing attribution and campaign performance', 'Product recommendation effectiveness']
+            },
+            'media': {
+                displayName: 'Media & Entertainment',
+                description: 'Streaming services, content platforms, and entertainment apps',
+                businessModels: [
+                    { value: 'subscription', label: 'Subscription Platform', recommended: true },
+                    { value: 'freemium', label: 'Freemium (Free + Premium)' },
+                    { value: 'advertising', label: 'Ad-Supported Content' },
+                    { value: 'marketplace', label: 'Content Marketplace' }
+                ],
+                revenueModels: [
+                    { value: 'subscription', label: 'Monthly/Annual Subscriptions', recommended: true },
+                    { value: 'advertising', label: 'Advertising Revenue' },
+                    { value: 'hybrid', label: 'Subscription + Advertising' },
+                    { value: 'pay_per_view', label: 'Pay-per-View/Rental' },
+                    { value: 'freemium', label: 'Freemium Upgrades' }
+                ],
+                defaultEvents: ['Video Started', 'Video Completed', 'Content Liked', 'Subscription Purchased', 'Search Performed'],
+                suggestedEvents: ['Content Shared', 'Recommendation Clicked', 'Playlist Created', 'Content Added to Watchlist', 'Comment Posted', 'Content Rated', 'Live Chat Participated', 'Download Completed'],
+                demoObjectives: ['Content engagement and completion rates', 'Subscription conversion and churn analysis', 'Content recommendation performance', 'User journey from discovery to subscription', 'Binge-watching patterns and session analysis']
+            },
+            'saas': {
+                displayName: 'SaaS & Software',
+                description: 'Software-as-a-Service platforms and business tools',
+                businessModels: [
+                    { value: 'b2b', label: 'B2B (Business Software)', recommended: true },
+                    { value: 'freemium', label: 'Freemium Model' },
+                    { value: 'enterprise', label: 'Enterprise Sales' },
+                    { value: 'b2c', label: 'B2C (Consumer Software)' }
+                ],
+                revenueModels: [
+                    { value: 'subscription', label: 'Monthly/Annual Subscriptions', recommended: true },
+                    { value: 'freemium', label: 'Freemium Upgrades' },
+                    { value: 'usage_based', label: 'Usage-Based Pricing' },
+                    { value: 'enterprise', label: 'Enterprise Licensing' }
+                ],
+                defaultEvents: ['Feature Used', 'Dashboard Viewed', 'Report Generated', 'Trial Started', 'Subscription Purchased'],
+                suggestedEvents: ['Account Created', 'Data Source Connected', 'Team Member Invited', 'Integration Configured', 'Export Completed', 'API Called', 'Support Ticket Created'],
+                demoObjectives: ['Feature adoption and usage patterns', 'Trial to paid conversion optimization', 'User onboarding effectiveness', 'Team collaboration and sharing metrics', 'Product-led growth insights']
+            },
+            'fintech': {
+                displayName: 'FinTech & Financial Services',
+                description: 'Digital banking, payments, and financial platforms',
+                businessModels: [
+                    { value: 'b2c', label: 'B2C (Consumer Finance)', recommended: true },
+                    { value: 'b2b', label: 'B2B (Business Finance)' },
+                    { value: 'marketplace', label: 'Financial Marketplace' },
+                    { value: 'enterprise', label: 'Enterprise Solutions' }
+                ],
+                revenueModels: [
+                    { value: 'transaction_fees', label: 'Transaction Fees', recommended: true },
+                    { value: 'subscription', label: 'Monthly/Annual Plans' },
+                    { value: 'commission', label: 'Commission on Services' },
+                    { value: 'interest', label: 'Interest & Lending' }
+                ],
+                defaultEvents: ['Account Opened', 'Transaction Completed', 'Investment Made', 'Loan Applied', 'KYC Completed'],
+                suggestedEvents: ['Payment Sent', 'Budget Created', 'Credit Score Checked', 'Card Activated', 'Fraud Alert Triggered', 'Goal Set', 'Notification Received'],
+                demoObjectives: ['Transaction volume and revenue tracking', 'User onboarding and KYC completion rates', 'Financial product adoption', 'Risk management and fraud detection', 'Customer lifetime value in financial services']
+            },
+            'hospitality': {
+                displayName: 'Travel & Hospitality',
+                description: 'Hotels, travel booking, and hospitality services',
+                businessModels: [
+                    { value: 'b2c', label: 'B2C (Direct Bookings)', recommended: true },
+                    { value: 'marketplace', label: 'Booking Platform' },
+                    { value: 'b2b', label: 'B2B (Corporate Travel)' },
+                    { value: 'commission', label: 'Commission-Based' }
+                ],
+                revenueModels: [
+                    { value: 'bookings', label: 'Booking Revenue', recommended: true },
+                    { value: 'commission', label: 'Commission from Partners' },
+                    { value: 'subscription', label: 'Membership Programs' },
+                    { value: 'service_fees', label: 'Service Fees' }
+                ],
+                defaultEvents: ['Room Search Performed', 'Booking Completed', 'Check-in Completed', 'Amenity Used', 'Review Submitted'],
+                suggestedEvents: ['Room Viewed', 'Booking Started', 'Payment Processed', 'Mobile Key Used', 'Room Service Ordered', 'Spa Service Booked', 'Loyalty Points Earned'],
+                demoObjectives: ['Booking conversion funnel optimization', 'Guest experience and satisfaction tracking', 'Revenue per guest and upselling opportunities', 'Loyalty program effectiveness', 'Operational efficiency metrics']
+            },
+            'iot': {
+                displayName: 'IoT & Smart Devices',
+                description: 'Internet of Things, smart home, and connected devices',
+                businessModels: [
+                    { value: 'b2c', label: 'B2C (Consumer Devices)', recommended: true },
+                    { value: 'b2b', label: 'B2B (Enterprise IoT)' },
+                    { value: 'subscription', label: 'Device + Service' },
+                    { value: 'enterprise', label: 'Enterprise Solutions' }
+                ],
+                revenueModels: [
+                    { value: 'product_sales', label: 'Device Sales', recommended: true },
+                    { value: 'subscription', label: 'Service Subscriptions' },
+                    { value: 'usage_based', label: 'Usage-Based Pricing' },
+                    { value: 'data_monetization', label: 'Data Insights' }
+                ],
+                defaultEvents: ['Device Activated', 'Sensor Data Received', 'Automation Triggered', 'Energy Saved', 'Alert Generated'],
+                suggestedEvents: ['Device Connected', 'Firmware Updated', 'Schedule Created', 'Remote Access Used', 'Battery Low Warning', 'Maintenance Required', 'Usage Report Generated'],
+                demoObjectives: ['Device adoption and activation rates', 'Usage patterns and optimization opportunities', 'Predictive maintenance insights', 'Energy efficiency and cost savings', 'User engagement with smart features']
+            },
+            'healthcare': {
+                displayName: 'Healthcare & Wellness',
+                description: 'Digital health, telemedicine, and wellness platforms',
+                businessModels: [
+                    { value: 'b2c', label: 'B2C (Patient Direct)', recommended: true },
+                    { value: 'b2b', label: 'B2B (Healthcare Providers)' },
+                    { value: 'subscription', label: 'Wellness Subscriptions' },
+                    { value: 'marketplace', label: 'Healthcare Marketplace' }
+                ],
+                revenueModels: [
+                    { value: 'subscription', label: 'Monthly/Annual Plans', recommended: true },
+                    { value: 'pay_per_service', label: 'Pay-per-Consultation' },
+                    { value: 'insurance', label: 'Insurance Billing' },
+                    { value: 'freemium', label: 'Freemium Health Tools' }
+                ],
+                defaultEvents: ['Appointment Booked', 'Health Data Logged', 'Medication Reminder', 'Consultation Completed', 'Goal Achieved'],
+                suggestedEvents: ['Symptom Checker Used', 'Prescription Filled', 'Wearable Data Synced', 'Emergency Alert Sent', 'Care Plan Updated', 'Provider Rated', 'Insurance Verified'],
+                demoObjectives: ['Patient engagement and adherence tracking', 'Telehealth adoption and satisfaction', 'Health outcome improvements', 'Care coordination effectiveness', 'Preventive care and wellness metrics']
+            },
+            'education': {
+                displayName: 'Education & E-Learning',
+                description: 'Online learning platforms, educational tools, and EdTech',
+                businessModels: [
+                    { value: 'b2c', label: 'B2C (Individual Learners)', recommended: true },
+                    { value: 'b2b', label: 'B2B (Educational Institutions)' },
+                    { value: 'freemium', label: 'Freemium Courses' },
+                    { value: 'marketplace', label: 'Course Marketplace' }
+                ],
+                revenueModels: [
+                    { value: 'subscription', label: 'Monthly/Annual Access', recommended: true },
+                    { value: 'course_sales', label: 'Individual Course Sales' },
+                    { value: 'freemium', label: 'Freemium Upgrades' },
+                    { value: 'certification', label: 'Certification Fees' }
+                ],
+                defaultEvents: ['Course Started', 'Lesson Completed', 'Quiz Taken', 'Certificate Earned', 'Subscription Purchased'],
+                suggestedEvents: ['Video Watched', 'Assignment Submitted', 'Discussion Posted', 'Progress Milestone', 'Course Rated', 'Study Group Joined', 'Reminder Clicked'],
+                demoObjectives: ['Course completion and engagement rates', 'Learning path optimization', 'Student retention and success metrics', 'Content effectiveness analysis', 'Subscription conversion from free trials']
+            },
+            'gaming': {
+                displayName: 'Gaming & Entertainment',
+                description: 'Mobile games, gaming platforms, and interactive entertainment',
+                businessModels: [
+                    { value: 'freemium', label: 'Freemium (Free-to-Play)', recommended: true },
+                    { value: 'b2c', label: 'B2C (Premium Games)' },
+                    { value: 'subscription', label: 'Gaming Subscriptions' },
+                    { value: 'advertising', label: 'Ad-Supported Games' }
+                ],
+                revenueModels: [
+                    { value: 'in_app_purchases', label: 'In-App Purchases', recommended: true },
+                    { value: 'advertising', label: 'Advertising Revenue' },
+                    { value: 'subscription', label: 'Premium Subscriptions' },
+                    { value: 'game_sales', label: 'Game Sales' }
+                ],
+                defaultEvents: ['Game Started', 'Level Completed', 'In-App Purchase', 'Achievement Unlocked', 'Social Share'],
+                suggestedEvents: ['Tutorial Completed', 'Daily Login', 'Power-Up Used', 'Multiplayer Match', 'Leaderboard Viewed', 'Ad Watched', 'Friend Invited'],
+                demoObjectives: ['Player engagement and retention metrics', 'Monetization and in-app purchase analysis', 'Level progression and difficulty balancing', 'Social features and viral growth', 'Ad revenue optimization']
+            }
+        };
+
+        // Update form based on selected industry
+        function updateIndustryDefaults() {
+            const industrySelect = document.getElementById('industry');
+            const selectedIndustry = industrySelect.value;
+            
+            if (!selectedIndustry || selectedIndustry === 'custom') {
+                resetToGenericDefaults();
+                return;
+            }
+
+            const template = INDUSTRY_TEMPLATES[selectedIndustry];
+            if (!template) return;
+
+            // Update industry description
+            document.getElementById('industryDescription').textContent = template.description;
+
+            // Update business model options
+            updateBusinessModelOptions(template.businessModels);
+            
+            // Update revenue model options
+            updateRevenueModelOptions(template.revenueModels);
+            
+            // Update default events
+            updateDefaultEvents(template.defaultEvents);
+            
+            // Show suggested events
+            showSuggestedEvents(template.suggestedEvents);
+            
+            // Update demo objectives suggestions
+            updateObjectiveSuggestions(template.demoObjectives);
+        }
+
+        function updateBusinessModelOptions(businessModels) {
+            const select = document.getElementById('businessModel');
+            const helpText = document.getElementById('businessModelHelp');
+            
+            // Clear existing options except the first one
+            select.innerHTML = '<option value="">Select Business Model</option>';
+            
+            let recommendedValue = null;
+            businessModels.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.value;
+                option.textContent = model.label + (model.recommended ? ' (Recommended)' : '');
+                select.appendChild(option);
+                
+                if (model.recommended) {
+                    recommendedValue = model.value;
+                }
+            });
+            
+            // Set recommended value
+            if (recommendedValue) {
+                select.value = recommendedValue;
+                helpText.textContent = '✅ Recommended option selected based on your industry';
+            }
+        }
+
+        function updateRevenueModelOptions(revenueModels) {
+            const select = document.getElementById('revenueModel');
+            const helpText = document.getElementById('revenueModelHelp');
+            
+            // Clear existing options except the first one
+            select.innerHTML = '<option value="">Select Revenue Model</option>';
+            
+            let recommendedValue = null;
+            revenueModels.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.value;
+                option.textContent = model.label + (model.recommended ? ' (Recommended)' : '');
+                select.appendChild(option);
+                
+                if (model.recommended) {
+                    recommendedValue = model.value;
+                }
+            });
+            
+            // Set recommended value
+            if (recommendedValue) {
+                select.value = recommendedValue;
+                helpText.textContent = '✅ Recommended option selected based on your industry';
+            }
+        }
+
+        function updateDefaultEvents(defaultEvents) {
+            const eventsList = document.getElementById('eventsList');
+            eventsList.innerHTML = '';
+            
+            defaultEvents.forEach(eventName => {
+                const eventItem = document.createElement('div');
+                eventItem.className = 'event-item';
+                eventItem.innerHTML = `
+                    <input type="text" placeholder="Event name" value="${eventName}">
+                    <button type="button" class="btn-remove" onclick="removeEvent(this)">Remove</button>
+                `;
+                eventsList.appendChild(eventItem);
+            });
+            
+            eventCounter = defaultEvents.length;
+        }
+
+        function showSuggestedEvents(suggestedEvents) {
+            const container = document.getElementById('suggestedEvents');
+            const list = document.getElementById('suggestedEventsList');
+            
+            list.innerHTML = '';
+            suggestedEvents.forEach(eventName => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.textContent = eventName;
+                button.style.cssText = 'padding: 4px 8px; margin: 2px; background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; border-radius: 4px; font-size: 12px; cursor: pointer;';
+                button.onclick = () => addSuggestedEvent(eventName);
+                list.appendChild(button);
+            });
+            
+            container.style.display = 'block';
+        }
+
+        function addSuggestedEvent(eventName) {
+            // Check if event already exists
+            const existingInputs = document.querySelectorAll('#eventsList input');
+            const existingEvents = Array.from(existingInputs).map(input => input.value.trim().toLowerCase());
+            
+            if (existingEvents.includes(eventName.toLowerCase())) {
+                return; // Event already exists
+            }
+            
+            const eventsList = document.getElementById('eventsList');
+            const eventItem = document.createElement('div');
+            eventItem.className = 'event-item';
+            eventItem.innerHTML = `
+                <input type="text" placeholder="Event name" value="${eventName}">
+                <button type="button" class="btn-remove" onclick="removeEvent(this)">Remove</button>
+            `;
+            eventsList.appendChild(eventItem);
+            eventCounter++;
+        }
+
+        function useAllSuggested() {
+            const industrySelect = document.getElementById('industry');
+            const selectedIndustry = industrySelect.value;
+            const template = INDUSTRY_TEMPLATES[selectedIndustry];
+            
+            if (!template) return;
+            
+            // Clear existing events and add all suggested
+            const eventsList = document.getElementById('eventsList');
+            eventsList.innerHTML = '';
+            
+            const allEvents = [...template.defaultEvents, ...template.suggestedEvents];
+            allEvents.forEach(eventName => {
+                const eventItem = document.createElement('div');
+                eventItem.className = 'event-item';
+                eventItem.innerHTML = `
+                    <input type="text" placeholder="Event name" value="${eventName}">
+                    <button type="button" class="btn-remove" onclick="removeEvent(this)">Remove</button>
+                `;
+                eventsList.appendChild(eventItem);
+            });
+            
+            eventCounter = allEvents.length;
+        }
+
+        function updateObjectiveSuggestions(objectives) {
+            const container = document.getElementById('objectiveSuggestions');
+            const list = document.getElementById('objectivesList');
+            
+            list.innerHTML = '';
+            objectives.forEach(objective => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.textContent = objective;
+                button.style.cssText = 'padding: 3px 6px; margin: 2px; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; border-radius: 3px; font-size: 11px; cursor: pointer;';
+                button.onclick = () => {
+                    const textarea = document.getElementById('demoGoals');
+                    if (textarea.value.trim()) {
+                        textarea.value += '\n• ' + objective;
+                    } else {
+                        textarea.value = '• ' + objective;
+                    }
+                };
+                list.appendChild(button);
+            });
+            
+            container.style.display = 'block';
+        }
+
+        function resetToGenericDefaults() {
+            document.getElementById('industryDescription').textContent = '';
+            document.getElementById('suggestedEvents').style.display = 'none';
+            document.getElementById('objectiveSuggestions').style.display = 'none';
+            
+            // Reset business model to generic options
+            const businessModelSelect = document.getElementById('businessModel');
+            businessModelSelect.innerHTML = `
+                <option value="">Select Business Model</option>
+                <option value="b2c">B2C</option>
+                <option value="b2b">B2B</option>
+                <option value="marketplace">Marketplace</option>
+                <option value="subscription">Subscription</option>
+                <option value="freemium">Freemium</option>
+                <option value="enterprise">Enterprise</option>
+            `;
+            
+            // Reset revenue model to generic options
+            const revenueModelSelect = document.getElementById('revenueModel');
+            revenueModelSelect.innerHTML = `
+                <option value="">Select Revenue Model</option>
+                <option value="subscription">Subscription</option>
+                <option value="one_time_purchase">One-time Purchase</option>
+                <option value="advertising">Advertising</option>
+                <option value="commission">Commission</option>
+                <option value="freemium">Freemium</option>
+            `;
+            
+            document.getElementById('businessModelHelp').textContent = '';
+            document.getElementById('revenueModelHelp').textContent = '';
+        }
+
+        // Demo type configuration presets
+        function updateDemoTypeSettings() {
+            const demoType = document.getElementById('demoType').value;
+            const description = document.getElementById('demoTypeDescription');
+            const enableBackfill = document.getElementById('enableBackfill');
+            const backfillOptions = document.getElementById('backfillOptions');
+            
+            const demoConfigs = {
+                'analytics_demo': {
+                    title: '📊 Analytics Demo (Recommended)',
+                    description: 'Perfect for client meetings! Includes months of realistic historical data for credible dashboards, plus live events during your presentation. Shows trends, user progression, and real-time activity.',
+                    enableHistorical: true,
+                    backfillDays: 60,
+                    usersPerDay: 20,
+                    eventsPerUser: 15,
+                    backfillMode: 'immediate',
+                    eventInterval: 4000
+                },
+                'live_presentation': {
+                    title: '🎬 Live Presentation Only',
+                    description: 'Focuses on real-time event generation during your presentation. Great for showing live user activity and immediate event tracking. No historical data needed.',
+                    enableHistorical: false,
+                    eventInterval: 3000
+                },
+                'data_analysis': {
+                    title: '📈 Data Analysis Focus',
+                    description: 'Emphasizes rich historical data for deep analytics and trend analysis. Generates extensive historical user journeys with minimal real-time events.',
+                    enableHistorical: true,
+                    backfillDays: 90,
+                    usersPerDay: 30,
+                    eventsPerUser: 20,
+                    backfillMode: 'immediate',
+                    eventInterval: 8000
+                },
+                'custom': {
+                    title: '⚙️ Custom Configuration',
+                    description: 'Configure all settings manually to match your specific demo requirements. Full control over historical data, real-time events, and timing.',
+                    enableHistorical: true
+                }
+            };
+            
+            const config = demoConfigs[demoType];
+            if (!config) return;
+            
+            // Update description
+            description.innerHTML = `<strong>${config.title}</strong><br><small style="color: #1e40af;">${config.description}</small>`;
+            
+            // Update historical data settings
+            enableBackfill.checked = config.enableHistorical;
+            
+            if (config.enableHistorical && demoType !== 'custom') {
+                // Auto-configure historical data settings
+                if (config.backfillDays) document.getElementById('backfillDays').value = config.backfillDays;
+                if (config.usersPerDay) document.getElementById('usersPerDay').value = config.usersPerDay;
+                if (config.eventsPerUser) document.getElementById('eventsPerUser').value = config.eventsPerUser;
+                if (config.backfillMode) document.getElementById('backfillMode').value = config.backfillMode;
+            }
+            
+            // Update event interval
+            if (config.eventInterval) {
+                document.getElementById('eventInterval').value = config.eventInterval;
+            }
+            
+            // Show/hide backfill options
+            toggleBackfillOptions();
+            
+            // Update estimated events
+            updateEstimatedEvents();
+        }
+
+        // Initialize demo type on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDemoTypeSettings();
+        });
 
         function addEvent() {
             const eventsList = document.getElementById('eventsList');
